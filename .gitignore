@@ -1,0 +1,23 @@
+# Google App Engine generated folder
+appengine-generated/
+
+#Java
+target/
+
+# Log fileDescriptor
+*.log
+
+# Idea files
+.idea
+*.iml
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Other
+env.sh

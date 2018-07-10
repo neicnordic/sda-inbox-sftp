@@ -1,2 +1,1 @@
-# LocalEGA-inbox
-SFTP dropbox for LocalEGA submissions
+SFTP Inbox for LocalEGA
