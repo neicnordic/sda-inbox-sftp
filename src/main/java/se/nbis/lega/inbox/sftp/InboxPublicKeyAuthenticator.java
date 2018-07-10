@@ -1,11 +1,12 @@
 package se.nbis.lega.inbox.sftp;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.pojo.Credentials;
 
@@ -24,6 +25,7 @@ import java.util.Arrays;
 @Component
 public class InboxPublicKeyAuthenticator implements PublickeyAuthenticator {
 
+    private String inboxFolder;
     private CredentialsProvider credentialsProvider;
     private VirtualFileSystemFactory fileSystemFactory;
 
@@ -35,7 +37,7 @@ public class InboxPublicKeyAuthenticator implements PublickeyAuthenticator {
             RSAPublicKey rsaPublicKey = readKey(publicKey);
             boolean result = Arrays.equals(rsaPublicKey.getEncoded(), key.getEncoded());
             if (result) {
-                File home = new File(String.format("/Users/dmytrot/mina/%s", username));
+                File home = new File(inboxFolder + username);
                 home.mkdirs();
                 fileSystemFactory.setUserHomeDir(username, home.toPath());
             }
@@ -72,6 +74,11 @@ public class InboxPublicKeyAuthenticator implements PublickeyAuthenticator {
         byte[] buf = new byte[len];
         dis.readFully(buf);
         return buf;
+    }
+
+    @Value("${inbox.directory}")
+    public void setInboxFolder(String inboxFolder) {
+        this.inboxFolder = inboxFolder;
     }
 
     @Autowired
