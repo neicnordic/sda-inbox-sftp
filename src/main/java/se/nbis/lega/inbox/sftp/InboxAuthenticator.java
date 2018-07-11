@@ -5,12 +5,16 @@ import com.github.benmanes.caffeine.cache.Expiry;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.Crypt;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
+import org.apache.sshd.server.auth.password.PasswordAuthenticator;
+import org.apache.sshd.server.auth.password.PasswordChangeRequiredException;
 import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import se.nbis.lega.inbox.pojo.Credentials;
 
 import java.io.*;
@@ -27,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
-public class InboxPublicKeyAuthenticator implements PublickeyAuthenticator {
+public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthenticator {
 
     private float defaultCacheTTL;
     private String inboxFolder;
@@ -50,6 +54,15 @@ public class InboxPublicKeyAuthenticator implements PublickeyAuthenticator {
                 }
             })
             .build(key -> credentialsProvider.getCredentials(key));
+
+    @Override
+    public boolean authenticate(String username, String password, ServerSession session) throws PasswordChangeRequiredException {
+        Credentials credentials = credentialsCache.get(username);
+        String hash = credentials.getPasswordHash();
+        String[] hashParts = hash.split("\\$");
+        String salt = String.format("$%s$%s$", hashParts[1], hashParts[2]);
+        return ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, salt));
+    }
 
     @Override
     public boolean authenticate(String username, PublicKey key, ServerSession session) {
