@@ -57,11 +57,20 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
 
     @Override
     public boolean authenticate(String username, String password, ServerSession session) throws PasswordChangeRequiredException {
-        Credentials credentials = credentialsCache.get(username);
-        String hash = credentials.getPasswordHash();
-        String[] hashParts = hash.split("\\$");
-        String salt = String.format("$%s$%s$", hashParts[1], hashParts[2]);
-        return ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, salt));
+        try {
+            Credentials credentials = credentialsCache.get(username);
+            String hash = credentials.getPasswordHash();
+            String[] hashParts = hash.split("\\$");
+            String salt = String.format("$%s$%s$", hashParts[1], hashParts[2]);
+            boolean result = ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, salt));
+            if (result) {
+                createHomeDir(username);
+            }
+            return result;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
     }
 
     @Override
@@ -72,15 +81,19 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
             RSAPublicKey rsaPublicKey = readKey(publicKey);
             boolean result = Arrays.equals(rsaPublicKey.getEncoded(), key.getEncoded());
             if (result) {
-                File home = new File(inboxFolder + username);
-                home.mkdirs();
-                fileSystemFactory.setUserHomeDir(username, home.toPath());
+                createHomeDir(username);
             }
             return result;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return false;
         }
+    }
+
+    private void createHomeDir(String username) {
+        File home = new File(inboxFolder + username);
+        home.mkdirs();
+        fileSystemFactory.setUserHomeDir(username, home.toPath());
     }
 
     // copied from https://github.com/CloudStack-extras/CloudStack-archive/blob/5b8d72bea4753fd9ecb500dd8db47b430cb7513a/utils/src/com/cloud/utils/crypt/RSAHelper.java
