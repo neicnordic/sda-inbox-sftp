@@ -1,5 +1,8 @@
 package se.nbis.lega.inbox.sftp;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Expiry;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
@@ -20,19 +23,38 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
 public class InboxPublicKeyAuthenticator implements PublickeyAuthenticator {
 
+    private float defaultCacheTTL;
     private String inboxFolder;
     private CredentialsProvider credentialsProvider;
     private VirtualFileSystemFactory fileSystemFactory;
 
+    private LoadingCache<String, Credentials> credentialsCache = Caffeine.newBuilder()
+            .expireAfter(new Expiry<String, Credentials>() {
+                public long expireAfterCreate(String key, Credentials graph, long currentTime) {
+                    float ttl = graph.getExpiration() == null ? defaultCacheTTL : graph.getExpiration();
+                    return TimeUnit.SECONDS.toNanos((long) ttl);
+                }
+
+                public long expireAfterUpdate(String key, Credentials graph, long currentTime, long currentDuration) {
+                    return Long.MAX_VALUE;
+                }
+
+                public long expireAfterRead(String key, Credentials graph, long currentTime, long currentDuration) {
+                    return Long.MAX_VALUE;
+                }
+            })
+            .build(key -> credentialsProvider.getCredentials(key));
+
     @Override
     public boolean authenticate(String username, PublicKey key, ServerSession session) {
         try {
-            Credentials credentials = credentialsProvider.getCredentials(username);
+            Credentials credentials = credentialsCache.get(username);
             String publicKey = credentials.getPublicKey();
             RSAPublicKey rsaPublicKey = readKey(publicKey);
             boolean result = Arrays.equals(rsaPublicKey.getEncoded(), key.getEncoded());
@@ -74,6 +96,11 @@ public class InboxPublicKeyAuthenticator implements PublickeyAuthenticator {
         byte[] buf = new byte[len];
         dis.readFully(buf);
         return buf;
+    }
+
+    @Value("${inbox.cache.ttl}")
+    public void setDefaultCacheTTL(float defaultCacheTTL) {
+        this.defaultCacheTTL = defaultCacheTTL;
     }
 
     @Value("${inbox.directory}")

@@ -3,7 +3,6 @@ package se.nbis.lega.inbox.configuration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
-import org.apache.sshd.server.auth.pubkey.CachingPublicKeyAuthenticator;
 import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
 import org.apache.sshd.server.auth.pubkey.UserAuthPublicKeyFactory;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
@@ -36,7 +35,7 @@ public class SFTPConfiguration {
         sftpSubsystemFactory.addSftpEventListener(sftpEventListener);
         sshd.setSubsystemFactories(Collections.singletonList(sftpSubsystemFactory));
         sshd.setFileSystemFactory(virtualFileSystemFactory());
-        sshd.setPublickeyAuthenticator(new CachingPublicKeyAuthenticator(publicKeyAuthenticator));
+        sshd.setPublickeyAuthenticator(publicKeyAuthenticator);
         sshd.start();
         return sshd;
     }

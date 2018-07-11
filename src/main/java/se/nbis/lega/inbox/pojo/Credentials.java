@@ -15,6 +15,6 @@ public class Credentials {
     private String publicKey;
 
     @SerializedName("expiration")
-    private String expiration;
+    private Float expiration;
 
 }
