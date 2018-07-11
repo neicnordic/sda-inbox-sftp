@@ -24,7 +24,7 @@ public class SFTPConfiguration {
     private int inboxPort;
 
     private SftpEventListener sftpEventListener;
-    private PublickeyAuthenticator publickeyAuthenticator;
+    private PublickeyAuthenticator publicKeyAuthenticator;
 
     @Bean
     public SshServer sshServer() throws IOException {
@@ -36,7 +36,7 @@ public class SFTPConfiguration {
         sftpSubsystemFactory.addSftpEventListener(sftpEventListener);
         sshd.setSubsystemFactories(Collections.singletonList(sftpSubsystemFactory));
         sshd.setFileSystemFactory(virtualFileSystemFactory());
-        sshd.setPublickeyAuthenticator(new CachingPublicKeyAuthenticator(publickeyAuthenticator));
+        sshd.setPublickeyAuthenticator(new CachingPublicKeyAuthenticator(publicKeyAuthenticator));
         sshd.start();
         return sshd;
     }
@@ -57,8 +57,8 @@ public class SFTPConfiguration {
     }
 
     @Autowired
-    public void setPublickeyAuthenticator(PublickeyAuthenticator publickeyAuthenticator) {
-        this.publickeyAuthenticator = publickeyAuthenticator;
+    public void setPublicKeyAuthenticator(PublickeyAuthenticator publicKeyAuthenticator) {
+        this.publicKeyAuthenticator = publicKeyAuthenticator;
     }
 
 }

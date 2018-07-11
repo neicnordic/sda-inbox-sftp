@@ -1,6 +1,7 @@
 package se.nbis.lega.inbox.sftp;
 
 import com.google.gson.Gson;
+import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,7 @@ public class CredentialsProvider {
     public Credentials getCredentials(String username) throws IOException {
         URL url = new URL(cegaEndpoint + username);
         URLConnection urlConnection = url.openConnection();
-        urlConnection.setRequestProperty("Authorization", "Basic " + Base64.getEncoder().encodeToString(cegaCredentials.getBytes()));
+        urlConnection.setRequestProperty(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(cegaCredentials.getBytes()));
         return gson.fromJson(new InputStreamReader(urlConnection.getInputStream()), Credentials.class);
     }
 

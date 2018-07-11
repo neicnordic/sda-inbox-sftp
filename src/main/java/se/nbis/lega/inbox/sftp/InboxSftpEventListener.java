@@ -3,6 +3,7 @@ package se.nbis.lega.inbox.sftp;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.sshd.server.session.ServerSession;
@@ -25,8 +26,7 @@ import java.util.List;
 @Component
 public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
 
-    private static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList("md5", "sha256");
-    private String inboxFolder;
+    private static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList(MessageDigestAlgorithms.MD5, MessageDigestAlgorithms.SHA_256);
     private String exchange;
     private String routingKeyChecksums;
     private String routingKeyFiles;
@@ -59,14 +59,9 @@ public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
         } else {
             fileDescriptor.setFileSize(FileUtils.sizeOf(file));
             String digest = DigestUtils.md5Hex(FileUtils.openInputStream(file));
-            fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity(digest, "md5"));
+            fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity(digest, MessageDigestAlgorithms.MD5));
             rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
         }
-    }
-
-    @Value("${inbox.directory}")
-    public void setInboxFolder(String inboxFolder) {
-        this.inboxFolder = inboxFolder;
     }
 
     @Value("${inbox.mq.exchange}")
