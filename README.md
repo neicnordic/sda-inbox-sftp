@@ -1,5 +1,7 @@
 # SFTP Inbox for LocalEGA
 
+[![Coverage Status](https://coveralls.io/repos/github/NBISweden/LocalEGA-inbox/badge.svg?branch=test%2Finitial-tests)](https://coveralls.io/github/NBISweden/LocalEGA-inbox?branch=test%2Finitial-tests)
+
 ##LocalEGA login system
 
 Central EGA contains a database of users, with IDs and passwords.
