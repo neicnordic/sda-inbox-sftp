@@ -1,5 +1,6 @@
 # SFTP Inbox for LocalEGA
 
+[![Build Status](https://travis-ci.org/NBISweden/LocalEGA-inbox.svg?branch=master)](https://travis-ci.org/NBISweden/LocalEGA-inbox)
 [![Coverage Status](https://coveralls.io/repos/github/NBISweden/LocalEGA-inbox/badge.svg)](https://coveralls.io/github/NBISweden/LocalEGA-inbox)
 
 ##LocalEGA login system
