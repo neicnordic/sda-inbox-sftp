@@ -1,7 +1,6 @@
 # SFTP Inbox for LocalEGA
 
-Inbox login system
-==================
+##LocalEGA login system
 
 Central EGA contains a database of users, with IDs and passwords.
 
@@ -29,8 +28,7 @@ The user's home directory is created when its credentials upon successful login.
 Moreover, for each user, we detect when the file upload is completed and compute its
 checksum. 
 
-Configuration
--------------
+##Configuration
 
 Environment variables used:
 
