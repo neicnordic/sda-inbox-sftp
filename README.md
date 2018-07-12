@@ -46,4 +46,3 @@ Environment variables used:
 | CACHE_TTL        | 3600.0        |
 | CEGA_ENDPOINT    |               |
 | CACHE_TTL        |               |
-
