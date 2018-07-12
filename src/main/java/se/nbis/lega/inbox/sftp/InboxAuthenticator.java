@@ -117,8 +117,8 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
 
         byte[] header = readElement(dis);
         String pubKeyFormat = new String(header);
-        if (!pubKeyFormat.equals("ssh-rsa")) {
-            throw new RuntimeException("Unsupported format");
+        if (!"ssh-rsa".equals(pubKeyFormat)) {
+            throw new UnsupportedEncodingException("Unsupported key format");
         }
 
         byte[] publicExponent = readElement(dis);
