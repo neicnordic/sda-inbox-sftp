@@ -32,8 +32,6 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 
 /**
  * Test Spring Boot application's main class with some configuration and some beans defined.
- *
- * @author Dmytro Titov
  */
 @ComponentScan(basePackages = "se.nbis.lega.inbox")
 @SpringBootApplication

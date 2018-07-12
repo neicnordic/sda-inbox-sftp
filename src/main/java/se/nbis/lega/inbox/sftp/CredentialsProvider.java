@@ -13,6 +13,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Base64;
 
+/**
+ * Component that queries CEGA for user credentials.
+ */
 @Component
 public class CredentialsProvider {
 
@@ -21,6 +24,13 @@ public class CredentialsProvider {
 
     private Gson gson;
 
+    /**
+     * Queries CEGA REST endpoint to obtain user credentials.
+     *
+     * @param username Target user name.
+     * @return User's credentials.
+     * @throws IOException In case we can't read from remote endpoint.
+     */
     public Credentials getCredentials(String username) throws IOException {
         URL url = new URL(cegaEndpoint + username);
         URLConnection urlConnection = url.openConnection();

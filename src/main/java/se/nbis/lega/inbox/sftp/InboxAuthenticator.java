@@ -29,6 +29,9 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Component that authenticates users against the inbox.
+ */
 @Slf4j
 @Component
 public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthenticator {
@@ -38,6 +41,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
     private CredentialsProvider credentialsProvider;
     private VirtualFileSystemFactory fileSystemFactory;
 
+    // Caffeine cache with entry-specific TTLs
     private LoadingCache<String, Credentials> credentialsCache = Caffeine.newBuilder()
             .expireAfter(new Expiry<String, Credentials>() {
                 public long expireAfterCreate(String key, Credentials graph, long currentTime) {
@@ -55,6 +59,9 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
             })
             .build(key -> credentialsProvider.getCredentials(key));
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean authenticate(String username, String password, ServerSession session) throws PasswordChangeRequiredException {
         try {
@@ -73,6 +80,9 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean authenticate(String username, PublicKey key, ServerSession session) {
         try {

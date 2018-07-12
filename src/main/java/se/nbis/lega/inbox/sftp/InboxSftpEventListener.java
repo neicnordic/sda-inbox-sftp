@@ -22,6 +22,9 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Component that composes and publishes message to MQ upon file uploading completion.
+ */
 @Slf4j
 @Component
 public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
@@ -33,6 +36,9 @@ public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
     private Gson gson;
     private RabbitTemplate rabbitTemplate;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close(ServerSession session, String remoteHandle, Handle localHandle) {
         File file = localHandle.getFile().toFile();

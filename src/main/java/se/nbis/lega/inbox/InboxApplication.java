@@ -5,8 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Spring Boot application's main class with some configuration and some beans defined.
- *
- * @author Dmytro Titov
  */
 @SpringBootApplication
 public class InboxApplication {
