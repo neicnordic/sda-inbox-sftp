@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/NBISweden/LocalEGA-inbox.svg?branch=master)](https://travis-ci.org/NBISweden/LocalEGA-inbox)
 [![Coverage Status](https://coveralls.io/repos/github/NBISweden/LocalEGA-inbox/badge.svg)](https://coveralls.io/github/NBISweden/LocalEGA-inbox)
 
-##LocalEGA login system
+## LocalEGA login system
 
 Central EGA contains a database of users, with IDs and passwords.
 
@@ -31,7 +31,7 @@ The user's home directory is created when its credentials upon successful login.
 Moreover, for each user, we detect when the file upload is completed and compute its
 checksum. 
 
-##Configuration
+## Configuration
 
 Environment variables used:
 
