@@ -9,6 +9,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import se.nbis.lega.inbox.pojo.Credentials;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
 import static se.nbis.lega.inbox.sftp.TestInboxApplication.*;
@@ -21,7 +22,7 @@ public class CredentialsProviderTest {
     private CredentialsProvider credentialsProvider;
 
     @Test
-    public void getCredentials() throws IOException {
+    public void getCredentials() throws IOException, URISyntaxException {
         Credentials credentials = credentialsProvider.getCredentials(USERNAME);
         assertEquals(PASSWORD_HASH, credentials.getPasswordHash());
         assertEquals(PUBLIC_KEY, credentials.getPublicKey());

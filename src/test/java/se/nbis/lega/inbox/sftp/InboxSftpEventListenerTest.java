@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static se.nbis.lega.inbox.sftp.TestInboxApplication.PASSWORD;
@@ -68,10 +67,10 @@ public class InboxSftpEventListenerTest {
     }
 
     @Test
-    public void uploadFile() throws IOException, InterruptedException {
+    public void uploadFile() throws IOException {
         sftpClient.put(file.getAbsolutePath(), file.getName());
 
-        FileDescriptor fileDescriptor = fileBlockingQueue.poll(1000, TimeUnit.MILLISECONDS);
+        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(USERNAME, fileDescriptor.getUser());
         assertEquals(inboxFolder + "/" + USERNAME + "/" + file.getName(), fileDescriptor.getFilePath());
@@ -84,10 +83,10 @@ public class InboxSftpEventListenerTest {
     }
 
     @Test
-    public void uploadHash() throws IOException, InterruptedException {
+    public void uploadHash() throws IOException {
         sftpClient.put(hash.getAbsolutePath(), hash.getName());
 
-        FileDescriptor fileDescriptor = hashBlockingQueue.poll(1000, TimeUnit.MILLISECONDS);
+        FileDescriptor fileDescriptor = hashBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(USERNAME, fileDescriptor.getUser());
         assertEquals(inboxFolder + "/" + USERNAME + "/" + hash.getName(), fileDescriptor.getFilePath());

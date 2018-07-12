@@ -68,12 +68,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock</artifactId>
-            <version>2.18.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.hierynomus</groupId>
             <artifactId>sshj</artifactId>
             <version>0.22.0</version>
@@ -86,9 +80,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.arivera.oss</groupId>
-            <artifactId>embedded-rabbitmq</artifactId>
-            <version>1.2.3</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>2.19.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
