@@ -1,6 +1,6 @@
 # SFTP Inbox for LocalEGA
 
-[![Coverage Status](https://coveralls.io/repos/github/NBISweden/LocalEGA-inbox/badge.svg?branch=test%2Finitial-tests)](https://coveralls.io/github/NBISweden/LocalEGA-inbox?branch=test%2Finitial-tests)
+[![Coverage Status](https://coveralls.io/repos/github/NBISweden/LocalEGA-inbox/badge.svg)](https://coveralls.io/github/NBISweden/LocalEGA-inbox)
 
 ##LocalEGA login system
 

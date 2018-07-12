@@ -2,6 +2,9 @@ language: java
 
 services: docker
 
+after_success:
+  - mvn clean jacoco:report coveralls:report
+
 notifications:
   email: false
   slack:

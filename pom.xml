@@ -127,7 +127,7 @@
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.3.0</version>
                 <configuration>
-                    <!--<repoToken></repoToken>-->
+                    <repoToken>${env.COVERALLS_TOKEN}</repoToken>
                 </configuration>
             </plugin>
             <plugin>
@@ -138,13 +138,6 @@
                     <execution>
                         <goals>
                             <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>generate-code-coverage-report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>
