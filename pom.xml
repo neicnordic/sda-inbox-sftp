@@ -85,6 +85,12 @@
             <version>0.3.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.arivera.oss</groupId>
+            <artifactId>embedded-rabbitmq</artifactId>
+            <version>1.2.3</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 

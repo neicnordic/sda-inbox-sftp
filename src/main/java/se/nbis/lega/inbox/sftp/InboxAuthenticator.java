@@ -64,7 +64,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
             String salt = String.format("$%s$%s$", hashParts[1], hashParts[2]);
             boolean result = ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, salt));
             if (result) {
-                createHomeDir(username);
+                createHomeDir(inboxFolder, username);
             }
             return result;
         } catch (Exception e) {
@@ -81,7 +81,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
             RSAPublicKey rsaPublicKey = readKey(publicKey);
             boolean result = Arrays.equals(rsaPublicKey.getEncoded(), key.getEncoded());
             if (result) {
-                createHomeDir(username);
+                createHomeDir(inboxFolder, username);
             }
             return result;
         } catch (Exception e) {
@@ -90,7 +90,11 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         }
     }
 
-    private void createHomeDir(String username) {
+    private void createHomeDir(String inboxFolder, String username) {
+        if (!inboxFolder.endsWith(File.separator)) {
+            inboxFolder = inboxFolder + File.separator;
+        }
+        log.info(inboxFolder);
         File home = new File(inboxFolder + username);
         home.mkdirs();
         fileSystemFactory.setUserHomeDir(username, home.toPath());

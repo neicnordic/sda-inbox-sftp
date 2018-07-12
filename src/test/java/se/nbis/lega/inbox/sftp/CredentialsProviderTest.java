@@ -1,6 +1,5 @@
 package se.nbis.lega.inbox.sftp;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import se.nbis.lega.inbox.pojo.Credentials;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
 import static se.nbis.lega.inbox.sftp.TestInboxApplication.*;
 
 @SpringBootTest(classes = TestInboxApplication.class)
@@ -23,8 +23,8 @@ public class CredentialsProviderTest {
     @Test
     public void getCredentials() throws IOException {
         Credentials credentials = credentialsProvider.getCredentials(USERNAME);
-        Assert.assertEquals(PASSWORD_HASH, credentials.getPasswordHash());
-        Assert.assertEquals(PUBLIC_KEY, credentials.getPublicKey());
+        assertEquals(PASSWORD_HASH, credentials.getPasswordHash());
+        assertEquals(PUBLIC_KEY, credentials.getPublicKey());
     }
 
     @Autowired
