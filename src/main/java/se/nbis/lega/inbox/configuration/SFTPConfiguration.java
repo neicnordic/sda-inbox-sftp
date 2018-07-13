@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
+/**
+ * Apache Mina SSHD related beans definitions.
+ */
 @Slf4j
 @Configuration
 public class SFTPConfiguration {

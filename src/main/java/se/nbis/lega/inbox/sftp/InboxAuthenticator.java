@@ -29,6 +29,9 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Component that authenticates users against the inbox.
+ */
 @Slf4j
 @Component
 public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthenticator {
@@ -38,6 +41,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
     private CredentialsProvider credentialsProvider;
     private VirtualFileSystemFactory fileSystemFactory;
 
+    // Caffeine cache with entry-specific TTLs
     private LoadingCache<String, Credentials> credentialsCache = Caffeine.newBuilder()
             .expireAfter(new Expiry<String, Credentials>() {
                 public long expireAfterCreate(String key, Credentials graph, long currentTime) {
@@ -55,6 +59,9 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
             })
             .build(key -> credentialsProvider.getCredentials(key));
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean authenticate(String username, String password, ServerSession session) throws PasswordChangeRequiredException {
         try {
@@ -64,7 +71,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
             String salt = String.format("$%s$%s$", hashParts[1], hashParts[2]);
             boolean result = ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, salt));
             if (result) {
-                createHomeDir(username);
+                createHomeDir(inboxFolder, username);
             }
             return result;
         } catch (Exception e) {
@@ -73,6 +80,9 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean authenticate(String username, PublicKey key, ServerSession session) {
         try {
@@ -81,7 +91,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
             RSAPublicKey rsaPublicKey = readKey(publicKey);
             boolean result = Arrays.equals(rsaPublicKey.getEncoded(), key.getEncoded());
             if (result) {
-                createHomeDir(username);
+                createHomeDir(inboxFolder, username);
             }
             return result;
         } catch (Exception e) {
@@ -90,7 +100,11 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         }
     }
 
-    private void createHomeDir(String username) {
+    private void createHomeDir(String inboxFolder, String username) {
+        if (!inboxFolder.endsWith(File.separator)) {
+            inboxFolder = inboxFolder + File.separator;
+        }
+        log.info(inboxFolder);
         File home = new File(inboxFolder + username);
         home.mkdirs();
         fileSystemFactory.setUserHomeDir(username, home.toPath());
@@ -103,8 +117,8 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
 
         byte[] header = readElement(dis);
         String pubKeyFormat = new String(header);
-        if (!pubKeyFormat.equals("ssh-rsa")) {
-            throw new RuntimeException("Unsupported format");
+        if (!"ssh-rsa".equals(pubKeyFormat)) {
+            throw new UnsupportedEncodingException("Unsupported key format");
         }
 
         byte[] publicExponent = readElement(dis);

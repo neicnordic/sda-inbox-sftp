@@ -4,6 +4,9 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 import lombok.ToString;
 
+/**
+ * Nested POJO for MQ message to publish.
+ */
 @ToString
 @Data
 public class EncryptedIntegrity {
