@@ -36,14 +36,14 @@ checksum.
 Environment variables used:
 
 
-| Variable name    | Default value |
-|------------------|---------------|
-| BROKER_USERNAME  | guest         |
-| BROKER_PASSWORD  | guest         |
-| BROKER_HOST      | mq            |
-| BROKER_PORT      | 5672          |
-| INBOX_PORT       | 2222          |
-| INBOX_LOCATION   | /ega/inbox/   |
-| CACHE_TTL        | 3600.0        |
-| CEGA_ENDPOINT    |               |
-| CACHE_TTL        |               |
+| Variable name         | Default value |
+|-----------------------|---------------|
+| BROKER_USERNAME       | guest         |
+| BROKER_PASSWORD       | guest         |
+| BROKER_HOST           | mq            |
+| BROKER_PORT           | 5672          |
+| INBOX_PORT            | 2222          |
+| INBOX_LOCATION        | /ega/inbox/   |
+| CACHE_TTL             | 3600.0        |
+| CEGA_ENDPOINT         |               |
+| CEGA_ENDPOINT_CREDS   |               |
