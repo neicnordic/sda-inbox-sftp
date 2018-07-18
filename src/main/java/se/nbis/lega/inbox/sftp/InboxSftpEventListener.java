@@ -69,11 +69,11 @@ public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
      */
     @Override
     public void moved(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts, Throwable thrown) throws IOException {
-        try {
+        if (thrown != null) {
+            log.error(thrown.getMessage(), thrown);
+        } else {
             // TODO: Think about what to do with the source location (or a case of file removal).
             processUploadedFile(session.getUsername(), dstPath.toFile());
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
         }
         super.moved(session, srcPath, dstPath, opts, thrown);
     }
