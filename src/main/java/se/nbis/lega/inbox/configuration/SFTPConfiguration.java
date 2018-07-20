@@ -1,6 +1,8 @@
 package se.nbis.lega.inbox.configuration;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.common.ByteBuffer;
+import org.apache.mina.common.SimpleByteBufferAllocator;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
@@ -34,6 +36,10 @@ public class SFTPConfiguration {
 
     @Bean
     public SshServer sshServer() throws IOException {
+        // As per recommendation here: https://mina.apache.org/mina-project/faq.html#i-get-outofmemoryerror-or-response-timeout-and-connection-reset-under-heavy-load
+        ByteBuffer.setUseDirectBuffers(false);
+        ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
+
         SshServer sshd = SshServer.setUpDefaultServer();
         sshd.setPort(inboxPort);
         sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
