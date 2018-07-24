@@ -104,7 +104,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         if (!inboxFolder.endsWith(File.separator)) {
             inboxFolder = inboxFolder + File.separator;
         }
-        log.info(inboxFolder);
+        log.info("Inbox initialized: {}", inboxFolder + username);
         File home = new File(inboxFolder + username);
         home.mkdirs();
         fileSystemFactory.setUserHomeDir(username, home.toPath());

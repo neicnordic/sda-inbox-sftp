@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.subsystem.sftp.AbstractSftpEventListenerAdapter;
+import org.apache.sshd.server.subsystem.sftp.FileHandle;
 import org.apache.sshd.server.subsystem.sftp.Handle;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,10 @@ import se.nbis.lega.inbox.pojo.FileDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.CopyOption;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -30,6 +34,7 @@ import java.util.List;
 public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
 
     private static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList(MessageDigestAlgorithms.MD5, MessageDigestAlgorithms.SHA_256);
+
     private String exchange;
     private String routingKeyChecksums;
     private String routingKeyFiles;
@@ -40,11 +45,50 @@ public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
      * {@inheritDoc}
      */
     @Override
+    public void written(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen, Throwable thrown) throws IOException {
+        if (thrown != null) {
+            log.error(thrown.getMessage(), thrown);
+        } else {
+            handleFileCreationModification(session, localHandle.getFile().toFile());
+        }
+        super.written(session, remoteHandle, localHandle, offset, data, dataOffset, dataLen, thrown);
+    }
+
+    private void handleFileCreationModification(ServerSession session, File file) {
+        if (file.exists() && file.isFile()) {
+            boolean fileModified = session.getBooleanProperty(file.getPath(), false);
+            if (!fileModified) {
+                session.getProperties().put(file.getPath(), true);
+                log.info("File {} created or modified", file.getPath());
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void moved(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts, Throwable thrown) throws IOException {
+        if (thrown != null) {
+            log.error(thrown.getMessage(), thrown);
+        } else {
+            // TODO: Think about what to do with the source location (or a case of file removal).
+            processUploadedFile(session.getUsername(), dstPath.toFile());
+        }
+        super.moved(session, srcPath, dstPath, opts, thrown);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void close(ServerSession session, String remoteHandle, Handle localHandle) {
         File file = localHandle.getFile().toFile();
-        if (file.exists() && file.isFile()) {
+        boolean fileModified = session.getBooleanProperty(file.getPath(), false);
+        if (fileModified) {
             try {
                 processUploadedFile(session.getUsername(), file);
+                session.getProperties().remove(file.getPath());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -53,20 +97,22 @@ public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
     }
 
     private void processUploadedFile(String username, File file) throws IOException {
-        log.info(String.format("File %s uploaded by user %s", file.getAbsolutePath(), username));
-        String extension = FilenameUtils.getExtension(file.getName());
-        FileDescriptor fileDescriptor = new FileDescriptor();
-        fileDescriptor.setUser(username);
-        fileDescriptor.setFilePath(file.getAbsolutePath());
-        if (SUPPORTED_ALGORITHMS.contains(extension.toLowerCase()) || SUPPORTED_ALGORITHMS.contains(extension.toUpperCase())) {
-            String digest = FileUtils.readFileToString(file, Charset.defaultCharset());
-            fileDescriptor.setContent(digest);
-            rabbitTemplate.convertAndSend(exchange, routingKeyChecksums, gson.toJson(fileDescriptor));
-        } else {
-            fileDescriptor.setFileSize(FileUtils.sizeOf(file));
-            String digest = DigestUtils.md5Hex(FileUtils.openInputStream(file));
-            fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity(digest, MessageDigestAlgorithms.MD5));
-            rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
+        if (file.exists() && file.isFile()) {
+            log.info("File {} uploaded or moved by user {}", file.getAbsolutePath(), username);
+            String extension = FilenameUtils.getExtension(file.getName());
+            FileDescriptor fileDescriptor = new FileDescriptor();
+            fileDescriptor.setUser(username);
+            fileDescriptor.setFilePath(file.getAbsolutePath());
+            if (SUPPORTED_ALGORITHMS.contains(extension.toLowerCase()) || SUPPORTED_ALGORITHMS.contains(extension.toUpperCase())) {
+                String digest = FileUtils.readFileToString(file, Charset.defaultCharset());
+                fileDescriptor.setContent(digest);
+                rabbitTemplate.convertAndSend(exchange, routingKeyChecksums, gson.toJson(fileDescriptor));
+            } else {
+                fileDescriptor.setFileSize(FileUtils.sizeOf(file));
+                String digest = DigestUtils.md5Hex(FileUtils.openInputStream(file));
+                fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity(digest, MessageDigestAlgorithms.MD5));
+                rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
+            }
         }
     }
 

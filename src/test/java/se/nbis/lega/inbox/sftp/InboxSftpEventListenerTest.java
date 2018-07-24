@@ -96,6 +96,27 @@ public class InboxSftpEventListenerTest {
         assertNull(encryptedIntegrity);
     }
 
+    @Test
+    public void moveFile() throws IOException {
+        sftpClient.put(file.getAbsolutePath(), file.getName());
+
+        fileBlockingQueue.poll();
+        sftpClient.mkdir("test");
+
+        sftpClient.rename(file.getName(), "test/" + file.getName());
+
+        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
+        assertNotNull(fileDescriptor);
+        assertEquals(USERNAME, fileDescriptor.getUser());
+        assertEquals(inboxFolder + "/" + USERNAME + "/test/" + file.getName(), fileDescriptor.getFilePath());
+        assertNull(fileDescriptor.getContent());
+        assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
+        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        assertNotNull(encryptedIntegrity);
+        assertEquals(MessageDigestAlgorithms.MD5, encryptedIntegrity.getAlgorithm());
+        assertEquals(DigestUtils.md5Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
+    }
+
     @Value("${inbox.directory}")
     public void setInboxFolder(String inboxFolder) {
         this.inboxFolder = inboxFolder;
