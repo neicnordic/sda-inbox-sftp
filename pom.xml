@@ -150,7 +150,8 @@
                 <version>0.8.1</version>
                 <configuration>
                     <excludes>
-                        <exclude>**/se/nbis/lega/inbox/InboxApplication.java</exclude>
+                        <exclude>**/se/nbis/lega/inbox/InboxApplication.class</exclude>
+                        <exclude>**/se/nbis/lega/inbox/configuration/*</exclude>
                         <exclude>**/se/nbis/lega/inbox/pojo/*</exclude>
                     </excludes>
                 </configuration>
