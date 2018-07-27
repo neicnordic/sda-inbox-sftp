@@ -109,9 +109,8 @@
                 <configuration>
                     <imageName>nbisweden/ega-mina-inbox</imageName>
                     <baseImage>openjdk:8-jre-alpine</baseImage>
-                    <entryPoint>["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005", "-jar",
-                        "/${project.build.finalName}.jar", "-XX:+UnlockExperimentalVMOptions",
-                        "-XX:+UseCGroupMemoryLimitForHeap"]
+                    <!-- Next line needs to be a single line, otherwise plugin crashes-->
+                    <entryPoint>["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005", "-jar", "/${project.build.finalName}.jar", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap"]
                     </entryPoint>
                     <!-- copy the service's jar fileDescriptor from target into the root directory of the image -->
                     <resources>
