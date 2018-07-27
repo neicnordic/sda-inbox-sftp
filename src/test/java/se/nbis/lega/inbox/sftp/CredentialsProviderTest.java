@@ -12,20 +12,19 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
-import static se.nbis.lega.inbox.sftp.TestInboxApplication.*;
 
 @SpringBootTest(classes = TestInboxApplication.class)
 @TestPropertySource(locations = "classpath:application.properties")
 @RunWith(SpringRunner.class)
-public class CredentialsProviderTest {
+public class CredentialsProviderTest extends InboxTest {
 
     private CredentialsProvider credentialsProvider;
 
     @Test
     public void getCredentials() throws IOException, URISyntaxException {
-        Credentials credentials = credentialsProvider.getCredentials(USERNAME);
-        assertEquals(PASSWORD_HASH, credentials.getPasswordHash());
-        assertEquals(PUBLIC_KEY, credentials.getPublicKey());
+        Credentials credentials = credentialsProvider.getCredentials(username);
+        assertEquals(passwordHash, credentials.getPasswordHash());
+        assertEquals(pubKey, credentials.getPublicKey());
     }
 
     @Autowired

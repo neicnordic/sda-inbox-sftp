@@ -13,8 +13,10 @@ import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import se.nbis.lega.inbox.pojo.Credentials;
 
 import java.io.*;
@@ -67,9 +69,10 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         try {
             Credentials credentials = credentialsCache.get(username);
             String hash = credentials.getPasswordHash();
-            String[] hashParts = hash.split("\\$");
-            String salt = String.format("$%s$%s$", hashParts[1], hashParts[2]);
-            boolean result = ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, salt));
+            boolean result = StringUtils.startsWithIgnoreCase(hash, "$2")
+                    ? BCrypt.checkpw(password, hash)
+                    : ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, hash));
+
             if (result) {
                 createHomeDir(inboxFolder, username);
             }

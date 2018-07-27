@@ -24,15 +24,12 @@ import java.nio.charset.Charset;
 import java.util.concurrent.BlockingQueue;
 
 import static org.junit.Assert.*;
-import static se.nbis.lega.inbox.sftp.TestInboxApplication.PASSWORD;
-import static se.nbis.lega.inbox.sftp.TestInboxApplication.USERNAME;
 
 @SpringBootTest(classes = TestInboxApplication.class)
 @TestPropertySource(locations = "classpath:application.properties")
 @RunWith(SpringRunner.class)
-public class InboxSftpEventListenerTest {
+public class InboxSftpEventListenerTest extends InboxTest {
 
-    private String inboxFolder;
     private int inboxPort;
     private BlockingQueue<FileDescriptor> fileBlockingQueue;
     private BlockingQueue<FileDescriptor> hashBlockingQueue;
@@ -55,15 +52,13 @@ public class InboxSftpEventListenerTest {
         ssh = new SSHClient();
         ssh.addHostKeyVerifier(new PromiscuousVerifier());
         ssh.connect("localhost", inboxPort);
-        ssh.authPassword(USERNAME, PASSWORD);
+        ssh.authPassword(username, password);
         sftpClient = ssh.newSFTPClient();
     }
 
     @After
     public void tearDown() throws IOException {
         ssh.close();
-        File userFolder = new File(inboxFolder + "/" + USERNAME + "/");
-        FileUtils.deleteDirectory(userFolder);
     }
 
     @Test
@@ -72,8 +67,8 @@ public class InboxSftpEventListenerTest {
 
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
-        assertEquals(USERNAME, fileDescriptor.getUser());
-        assertEquals(inboxFolder + "/" + USERNAME + "/" + file.getName(), fileDescriptor.getFilePath());
+        assertEquals(username, fileDescriptor.getUser());
+        assertEquals(inboxFolder + "/" + username + "/" + file.getName(), fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
@@ -88,8 +83,8 @@ public class InboxSftpEventListenerTest {
 
         FileDescriptor fileDescriptor = hashBlockingQueue.poll();
         assertNotNull(fileDescriptor);
-        assertEquals(USERNAME, fileDescriptor.getUser());
-        assertEquals(inboxFolder + "/" + USERNAME + "/" + hash.getName(), fileDescriptor.getFilePath());
+        assertEquals(username, fileDescriptor.getUser());
+        assertEquals(inboxFolder + "/" + username + "/" + hash.getName(), fileDescriptor.getFilePath());
         assertEquals(FileUtils.readFileToString(hash, Charset.defaultCharset()), fileDescriptor.getContent());
         assertEquals(0, fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
@@ -107,19 +102,14 @@ public class InboxSftpEventListenerTest {
 
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
-        assertEquals(USERNAME, fileDescriptor.getUser());
-        assertEquals(inboxFolder + "/" + USERNAME + "/test/" + file.getName(), fileDescriptor.getFilePath());
+        assertEquals(username, fileDescriptor.getUser());
+        assertEquals(inboxFolder + "/" + username + "/test/" + file.getName(), fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
         assertNotNull(encryptedIntegrity);
         assertEquals(MessageDigestAlgorithms.MD5, encryptedIntegrity.getAlgorithm());
         assertEquals(DigestUtils.md5Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
-    }
-
-    @Value("${inbox.directory}")
-    public void setInboxFolder(String inboxFolder) {
-        this.inboxFolder = inboxFolder;
     }
 
     @Value("${inbox.port}")
