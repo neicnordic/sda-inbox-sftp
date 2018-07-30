@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
+import se.nbis.lega.inbox.pojo.KeyAlgorithm;
 import se.nbis.lega.inbox.pojo.PasswordHashingAlgorithm;
 
 import java.io.File;
@@ -50,7 +51,7 @@ public abstract class InboxTest {
     public void generateUser() throws IOException, URISyntaxException {
         username = UUID.randomUUID().toString();
         password = UUID.randomUUID().toString();
-        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH);
+        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH, KeyAlgorithm.RSA);
     }
 
     @After
@@ -59,19 +60,21 @@ public abstract class InboxTest {
         FileUtils.deleteDirectory(userFolder);
     }
 
-    protected void mockCEGAEndpoint(String username, String password, PasswordHashingAlgorithm algorithm) throws URISyntaxException, IOException {
-        if (algorithm == PasswordHashingAlgorithm.BLOWFISH) {
-            passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
-        } else {
-            passwordHash = Crypt.crypt(password, algorithm.getMagicString() + BCrypt.gensalt() + "$");
-        }
+    protected void mockCEGAEndpoint(String username, String password, PasswordHashingAlgorithm passwordHashingAlgorithm, KeyAlgorithm keyAlgorithm) throws URISyntaxException, IOException {
+        mockCEGAEndpoint(username, password, passwordHashingAlgorithm, keyAlgorithm, HttpStatus.OK);
+    }
+
+    protected void mockCEGAEndpoint(String username, String password, PasswordHashingAlgorithm passwordHashingAlgorithm, KeyAlgorithm keyAlgorithm, HttpStatus httpStatus) throws URISyntaxException, IOException {
+        passwordHash = passwordHashingAlgorithm == PasswordHashingAlgorithm.BLOWFISH
+                ? BCrypt.hashpw(password, BCrypt.gensalt())
+                : Crypt.crypt(password, passwordHashingAlgorithm.getMagicString() + BCrypt.gensalt() + "$");
         URI cegaURI = new URL(cegaEndpoint + username).toURI();
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(cegaCredentials.getBytes()));
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        pubKey = FileUtils.readFileToString(new File(classloader.getResource("key.ssh").toURI()), Charset.defaultCharset());
+        pubKey = FileUtils.readFileToString(new File(classloader.getResource(String.format("%s.ssh", keyAlgorithm.name()).toLowerCase()).toURI()), Charset.defaultCharset());
         when(restTemplate.exchange(cegaURI, HttpMethod.GET, new HttpEntity<>(headers), String.class))
-                .thenReturn(new ResponseEntity<>(String.format("{'password_hash': '%s','pubkey': '%s'}", passwordHash, pubKey), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(String.format("{'password_hash': '%s','pubkey': '%s'}", passwordHash, pubKey), httpStatus));
     }
 
     @Value("${inbox.directory}")

@@ -9,8 +9,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import se.nbis.lega.inbox.pojo.KeyAlgorithm;
 import se.nbis.lega.inbox.pojo.PasswordHashingAlgorithm;
 
 import java.io.File;
@@ -43,50 +45,68 @@ public class InboxAuthenticatorTest extends InboxTest {
 
     @Test
     public void authenticatePasswordMD5() throws IOException, URISyntaxException {
-        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.MD5);
+        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.MD5, KeyAlgorithm.RSA);
         ssh.authPassword(username, password);
         assertNotNull(ssh.newSFTPClient());
     }
 
     @Test
     public void authenticatePasswordSHA256() throws IOException, URISyntaxException {
-        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.SHA256);
+        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.SHA256, KeyAlgorithm.RSA);
         ssh.authPassword(username, password);
         assertNotNull(ssh.newSFTPClient());
     }
 
     @Test
     public void authenticatePasswordSHA512() throws IOException, URISyntaxException {
-        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.SHA512);
+        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.SHA512, KeyAlgorithm.RSA);
         ssh.authPassword(username, password);
         assertNotNull(ssh.newSFTPClient());
     }
 
     @Test
     public void authenticatePasswordBlowfish() throws IOException, URISyntaxException {
-        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH);
+        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH, KeyAlgorithm.RSA);
         ssh.authPassword(username, password);
         assertNotNull(ssh.newSFTPClient());
     }
 
     @Test(expected = UserAuthException.class)
-    public void authenticatePasswordFail() throws IOException {
+    public void authenticatePasswordWrongCredentials() throws IOException {
         ssh.authPassword(username, UUID.randomUUID().toString());
     }
 
     @Test
-    public void authenticatePublicKey() throws IOException, URISyntaxException {
+    public void authenticatePublicKeyRSA() throws IOException, URISyntaxException {
+        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH, KeyAlgorithm.RSA, HttpStatus.OK);
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        File privateKey = new File(classloader.getResource("key.sec").toURI());
+        File privateKey = new File(classloader.getResource("rsa.sec").toURI());
+        ssh.authPublickey(username, privateKey.getPath());
+        assertNotNull(ssh.newSFTPClient());
+    }
+
+    @Test
+    public void authenticatePublicKeyDSS() throws IOException, URISyntaxException {
+        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH, KeyAlgorithm.DSS, HttpStatus.OK);
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        File privateKey = new File(classloader.getResource("dss.sec").toURI());
         ssh.authPublickey(username, privateKey.getPath());
         assertNotNull(ssh.newSFTPClient());
     }
 
     @Test(expected = UserAuthException.class)
     public void authenticatePublicKeyFail() throws IOException, URISyntaxException {
+        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH, KeyAlgorithm.RSA, HttpStatus.OK);
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        File privateKey = new File(classloader.getResource("key.sec").toURI());
-        ssh.authPublickey(UUID.randomUUID().toString(), privateKey.getPath());
+        File privateKey = new File(classloader.getResource("dss.sec").toURI());
+        ssh.authPublickey(username, privateKey.getPath());
+        assertNotNull(ssh.newSFTPClient());
+    }
+
+    @Test(expected = UserAuthException.class)
+    public void authenticatePasswordBadStatusCode() throws IOException, URISyntaxException {
+        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH, KeyAlgorithm.RSA, HttpStatus.BAD_REQUEST);
+        ssh.authPassword(username, password);
     }
 
     @Value("${inbox.port}")

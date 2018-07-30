@@ -118,7 +118,7 @@
                     </entryPoint>
                     <healthcheck>
                         <options>--interval=10s</options>
-                        <cmd>curl --fail http://localhost:8080/actuator/health || exit 1</cmd>
+                        <cmd>curl --fail http://localhost:8080/healthcheck || exit 1</cmd>
                     </healthcheck>
                     <!-- copy the service's jar fileDescriptor from target into the root directory of the image -->
                     <resources>
