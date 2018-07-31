@@ -5,7 +5,7 @@
 
     <groupId>se.nbis.lega</groupId>
     <artifactId>inbox</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Inbox</name>
@@ -28,6 +28,14 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -105,8 +113,13 @@
                 <configuration>
                     <imageName>nbisweden/ega-mina-inbox</imageName>
                     <baseImage>openjdk:8-jre-alpine</baseImage>
+                    <!-- Next line needs to be a single line, otherwise plugin crashes-->
                     <entryPoint>["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005", "-jar", "/${project.build.finalName}.jar", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap"]
                     </entryPoint>
+                    <healthcheck>
+                        <options>--interval=10s</options>
+                        <cmd>curl --fail http://localhost:8080/healthcheck || exit 1</cmd>
+                    </healthcheck>
                     <!-- copy the service's jar fileDescriptor from target into the root directory of the image -->
                     <resources>
                         <resource>
@@ -137,6 +150,8 @@
                 <version>0.8.1</version>
                 <configuration>
                     <excludes>
+                        <exclude>**/se/nbis/lega/inbox/InboxApplication.class</exclude>
+                        <exclude>**/se/nbis/lega/inbox/configuration/*</exclude>
                         <exclude>**/se/nbis/lega/inbox/pojo/*</exclude>
                     </excludes>
                 </configuration>

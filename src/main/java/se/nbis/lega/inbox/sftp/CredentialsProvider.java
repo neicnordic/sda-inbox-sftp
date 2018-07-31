@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import se.nbis.lega.inbox.pojo.Credentials;
 
@@ -44,7 +45,7 @@ public class CredentialsProvider {
         ResponseEntity<String> response = restTemplate.exchange(url.toURI(), HttpMethod.GET, new HttpEntity<>(headers), String.class);
         HttpStatus statusCode = response.getStatusCode();
         if (!HttpStatus.OK.equals(statusCode)) {
-            throw new IOException(String.format("Bad response from CentralEGA: %s, %s", statusCode.value(), statusCode.getReasonPhrase()));
+            throw new RestClientException(String.format("Bad response from CentralEGA: %s, %s", statusCode.value(), statusCode.getReasonPhrase()));
         }
         String body = response.getBody();
         return gson.fromJson(body, Credentials.class);
