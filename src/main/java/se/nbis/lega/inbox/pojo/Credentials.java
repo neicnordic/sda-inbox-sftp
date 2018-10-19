@@ -1,6 +1,6 @@
 package se.nbis.lega.inbox.pojo;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -11,10 +11,10 @@ import lombok.ToString;
 @Data
 public class Credentials {
 
-    @SerializedName("passwordHash")
+    @JsonProperty("passwordHash")
     private String passwordHash;
 
-    @SerializedName("sshPublicKey")
+    @JsonProperty("sshPublicKey")
     private String publicKey;
 
 }
