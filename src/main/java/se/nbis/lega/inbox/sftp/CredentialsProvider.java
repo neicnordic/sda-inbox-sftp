@@ -1,6 +1,5 @@
 package se.nbis.lega.inbox.sftp;
 
-import com.google.gson.Gson;
 import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import se.nbis.lega.inbox.pojo.Credentials;
+import se.nbis.lega.inbox.pojo.ResponseHolder;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -28,7 +28,6 @@ public class CredentialsProvider {
     private String cegaCredentials;
 
     private RestTemplate restTemplate;
-    private Gson gson;
 
     /**
      * Queries CEGA REST endpoint to obtain user credentials.
@@ -42,13 +41,12 @@ public class CredentialsProvider {
         URL url = new URL(String.format(cegaEndpoint, username));
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(cegaCredentials.getBytes()));
-        ResponseEntity<String> response = restTemplate.exchange(url.toURI(), HttpMethod.GET, new HttpEntity<>(headers), String.class);
+        ResponseEntity<ResponseHolder> response = restTemplate.exchange(url.toURI(), HttpMethod.GET, new HttpEntity<>(headers), ResponseHolder.class);
         HttpStatus statusCode = response.getStatusCode();
         if (!HttpStatus.OK.equals(statusCode)) {
             throw new RestClientException(String.format("Bad response from CentralEGA: %s, %s", statusCode.value(), statusCode.getReasonPhrase()));
         }
-        String body = response.getBody();
-        return gson.fromJson(body, Credentials.class);
+        return response.getBody().getResultsHolder().getCredentials().iterator().next();
     }
 
     @Value("${inbox.cega.endpoint}")
@@ -64,11 +62,6 @@ public class CredentialsProvider {
     @Autowired
     public void setRestTemplate(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-    }
-
-    @Autowired
-    public void setGson(Gson gson) {
-        this.gson = gson;
     }
 
 }

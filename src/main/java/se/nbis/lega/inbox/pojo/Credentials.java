@@ -11,13 +11,10 @@ import lombok.ToString;
 @Data
 public class Credentials {
 
-    @SerializedName("password_hash")
+    @SerializedName("passwordHash")
     private String passwordHash;
 
-    @SerializedName("pubkey")
+    @SerializedName("sshPublicKey")
     private String publicKey;
-
-    @SerializedName("expiration")
-    private Float expiration;
 
 }
