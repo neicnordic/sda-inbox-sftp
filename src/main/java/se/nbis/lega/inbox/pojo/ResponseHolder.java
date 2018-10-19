@@ -1,6 +1,6 @@
 package se.nbis.lega.inbox.pojo;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -8,7 +8,7 @@ import lombok.ToString;
 @Data
 public class ResponseHolder {
 
-    @SerializedName("response")
+    @JsonProperty("response")
     private ResultsHolder resultsHolder;
 
 }
