@@ -39,7 +39,7 @@ public class CredentialsProvider {
      * @throws URISyntaxException In case URL is in a wrong format.
      */
     public Credentials getCredentials(String username) throws IOException, URISyntaxException {
-        URL url = new URL(cegaEndpoint + username);
+        URL url = new URL(String.format(cegaEndpoint, username));
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(cegaCredentials.getBytes()));
         ResponseEntity<String> response = restTemplate.exchange(url.toURI(), HttpMethod.GET, new HttpEntity<>(headers), String.class);
