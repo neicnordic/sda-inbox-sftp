@@ -68,7 +68,7 @@ public abstract class InboxTest {
         passwordHash = passwordHashingAlgorithm == PasswordHashingAlgorithm.BLOWFISH
                 ? BCrypt.hashpw(password, BCrypt.gensalt())
                 : Crypt.crypt(password, passwordHashingAlgorithm.getMagicString() + BCrypt.gensalt() + "$");
-        URI cegaURI = new URL(cegaEndpoint + username).toURI();
+        URI cegaURI = new URL(String.format(cegaEndpoint, username)).toURI();
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(cegaCredentials.getBytes()));
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
