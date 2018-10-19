@@ -28,7 +28,7 @@ public class CredentialsProviderTest extends InboxTest {
     public void getCredentialsSuccess() throws IOException, URISyntaxException {
         Credentials credentials = credentialsProvider.getCredentials(username);
         assertEquals(passwordHash, credentials.getPasswordHash());
-        assertEquals(pubKey, credentials.getPublicKey());
+        assertEquals(publicKey, credentials.getPublicKey());
     }
 
     @Test(expected = RestClientException.class)

@@ -45,7 +45,7 @@ import static org.apache.sshd.common.config.keys.KeyUtils.RSA_ALGORITHM;
 @Component
 public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthenticator {
 
-    private float defaultCacheTTL;
+    private long defaultCacheTTL;
     private String inboxFolder;
     private CredentialsProvider credentialsProvider;
     private VirtualFileSystemFactory fileSystemFactory;
@@ -54,8 +54,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
     private LoadingCache<String, Credentials> credentialsCache = Caffeine.newBuilder()
             .expireAfter(new Expiry<String, Credentials>() {
                 public long expireAfterCreate(String key, Credentials graph, long currentTime) {
-                    float ttl = graph.getExpiration() == null ? defaultCacheTTL : graph.getExpiration();
-                    return TimeUnit.SECONDS.toNanos((long) ttl);
+                    return TimeUnit.SECONDS.toNanos(defaultCacheTTL);
                 }
 
                 public long expireAfterUpdate(String key, Credentials graph, long currentTime, long currentDuration) {
@@ -155,7 +154,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
     }
 
     @Value("${inbox.cache.ttl}")
-    public void setDefaultCacheTTL(float defaultCacheTTL) {
+    public void setDefaultCacheTTL(long defaultCacheTTL) {
         this.defaultCacheTTL = defaultCacheTTL;
     }
 

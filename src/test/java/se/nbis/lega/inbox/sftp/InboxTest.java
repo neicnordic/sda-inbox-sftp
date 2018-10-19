@@ -17,8 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
-import se.nbis.lega.inbox.pojo.KeyAlgorithm;
-import se.nbis.lega.inbox.pojo.PasswordHashingAlgorithm;
+import se.nbis.lega.inbox.pojo.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
@@ -45,7 +45,7 @@ public abstract class InboxTest {
     protected String username;
     protected String password;
     protected String passwordHash;
-    protected String pubKey;
+    protected String publicKey;
 
     @Before
     public void generateUser() throws IOException, URISyntaxException {
@@ -72,9 +72,15 @@ public abstract class InboxTest {
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(cegaCredentials.getBytes()));
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        pubKey = FileUtils.readFileToString(new File(classloader.getResource(String.format("%s.ssh", keyAlgorithm.name()).toLowerCase()).toURI()), Charset.defaultCharset());
-        when(restTemplate.exchange(cegaURI, HttpMethod.GET, new HttpEntity<>(headers), String.class))
-                .thenReturn(new ResponseEntity<>(String.format("{'password_hash': '%s','pubkey': '%s'}", passwordHash, pubKey), httpStatus));
+        publicKey = FileUtils.readFileToString(new File(classloader.getResource(String.format("%s.ssh", keyAlgorithm.name()).toLowerCase()).toURI()), Charset.defaultCharset());
+        Credentials credentials = new Credentials();
+        credentials.setPasswordHash(passwordHash);
+        credentials.setPublicKey(publicKey);
+        ResultsHolder resultsHolder = new ResultsHolder();
+        resultsHolder.setCredentials(Collections.singleton(credentials));
+        ResponseHolder responseHolder = new ResponseHolder();
+        responseHolder.setResultsHolder(resultsHolder);
+        when(restTemplate.exchange(cegaURI, HttpMethod.GET, new HttpEntity<>(headers), ResponseHolder.class)).thenReturn(new ResponseEntity<>(responseHolder, httpStatus));
     }
 
     @Value("${inbox.directory}")
