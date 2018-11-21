@@ -25,6 +25,7 @@ public class S3FileSystemFactory implements FileSystemFactory {
     private String s3AccessKey;
     private String s3SecretKey;
     private boolean useSSL;
+    private String pathStyleAccess;
 
     private MinioClient minioClient;
 
@@ -46,6 +47,7 @@ public class S3FileSystemFactory implements FileSystemFactory {
 
         Map<String, String> env = new HashMap<>();
         env.put(AmazonS3Factory.PROTOCOL, useSSL ? Protocol.HTTPS.name() : Protocol.HTTP.name());
+        env.put(AmazonS3Factory.PATH_STYLE_ACCESS, pathStyleAccess);
         env.put(AmazonS3Factory.ACCESS_KEY, s3AccessKey);
         env.put(AmazonS3Factory.SECRET_KEY, s3SecretKey);
 
@@ -75,6 +77,11 @@ public class S3FileSystemFactory implements FileSystemFactory {
     @Value("${inbox.s3.use-ssl}")
     public void setUseSSL(boolean useSSL) {
         this.useSSL = useSSL;
+    }
+
+    @Value("${inbox.s3.path-style-access}")
+    public void setPathStyleAccess(String pathStyleAccess) {
+        this.pathStyleAccess = pathStyleAccess;
     }
 
     @Autowired(required = false)
