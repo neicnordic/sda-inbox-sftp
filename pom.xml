@@ -64,6 +64,11 @@
             <artifactId>commons-io</artifactId>
             <version>2.6</version>
         </dependency>
+        <dependency>
+            <groupId>com.upplication</groupId>
+            <artifactId>s3fs</artifactId>
+            <version>2.2.2</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -116,10 +121,6 @@
                     <!-- Next line needs to be a single line, otherwise plugin crashes-->
                     <entryPoint>["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005", "-jar", "/${project.build.finalName}.jar", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap"]
                     </entryPoint>
-                    <healthcheck>
-                        <options>--interval=10s</options>
-                        <cmd>curl --fail http://localhost:8080/healthcheck || exit 1</cmd>
-                    </healthcheck>
                     <!-- copy the service's jar fileDescriptor from target into the root directory of the image -->
                     <resources>
                         <resource>

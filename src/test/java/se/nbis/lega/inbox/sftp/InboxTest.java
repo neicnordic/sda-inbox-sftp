@@ -83,7 +83,7 @@ public abstract class InboxTest {
         when(restTemplate.exchange(cegaURI, HttpMethod.GET, new HttpEntity<>(headers), ResponseHolder.class)).thenReturn(new ResponseEntity<>(responseHolder, httpStatus));
     }
 
-    @Value("${inbox.directory}")
+    @Value("${inbox.local.directory}")
     public void setInboxFolder(String inboxFolder) {
         this.inboxFolder = inboxFolder;
     }
