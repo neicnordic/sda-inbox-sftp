@@ -21,6 +21,7 @@ import java.util.Map;
 public class S3FileSystemFactory implements FileSystemFactory {
 
     private String s3Host;
+    private String s3Port;
     private String s3AccessKey;
     private String s3SecretKey;
     private boolean useSSL;
@@ -40,7 +41,7 @@ public class S3FileSystemFactory implements FileSystemFactory {
             throw new RuntimeException(e.getMessage(), e);
         }
 
-        String uri = String.format("s3://%s/%s", s3Host, username);
+        String uri = String.format("s3://%s:%s/%s", s3Host, s3Port, username);
         log.info("Inbox initialized: {}", uri);
 
         Map<String, String> env = new HashMap<>();
@@ -54,6 +55,11 @@ public class S3FileSystemFactory implements FileSystemFactory {
     @Value("${inbox.s3.host}")
     public void setS3Host(String s3Host) {
         this.s3Host = s3Host;
+    }
+
+    @Value("${inbox.s3.port}")
+    public void setS3Port(String s3Port) {
+        this.s3Port = s3Port;
     }
 
     @Value("${inbox.s3.access-key}")

@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 public class CommonConfiguration {
 
     private String s3Host;
+    private String s3Port;
     private String s3AccessKey;
     private String s3SecretKey;
     private boolean useSSL;
@@ -27,12 +28,17 @@ public class CommonConfiguration {
 
     @Bean
     public MinioClient minioClient() throws InvalidPortException, InvalidEndpointException {
-        return StringUtils.isNullOrEmpty(s3AccessKey) ? null : new MinioClient(s3Host, s3AccessKey, s3SecretKey, useSSL);
+        return StringUtils.isNullOrEmpty(s3AccessKey) ? null : new MinioClient(s3Host, Integer.valueOf(s3Port), s3AccessKey, s3SecretKey, useSSL);
     }
 
     @Value("${inbox.s3.host}")
     public void setS3Host(String s3Host) {
         this.s3Host = s3Host;
+    }
+
+    @Value("${inbox.s3.port}")
+    public void setS3Port(String s3Port) {
+        this.s3Port = s3Port;
     }
 
     @Value("${inbox.s3.access-key}")
