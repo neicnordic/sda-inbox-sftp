@@ -1,5 +1,6 @@
 package se.nbis.lega.inbox.configuration;
 
+import com.amazonaws.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.SimpleByteBufferAllocator;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -52,7 +52,7 @@ public class SFTPConfiguration {
         SftpSubsystemFactory sftpSubsystemFactory = new SftpSubsystemFactory();
         sftpSubsystemFactory.addSftpEventListener(sftpEventListener);
         sshd.setSubsystemFactories(Collections.singletonList(sftpSubsystemFactory));
-        sshd.setFileSystemFactory(StringUtils.isEmpty(s3AccessKey) ? localFileSystemFactory : s3FileSystemFactory);
+        sshd.setFileSystemFactory(StringUtils.isNullOrEmpty(s3AccessKey) ? localFileSystemFactory : s3FileSystemFactory);
         sshd.setPasswordAuthenticator(passwordAuthenticator);
         sshd.setPublickeyAuthenticator(publicKeyAuthenticator);
         sshd.start();
