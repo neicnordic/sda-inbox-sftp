@@ -3,7 +3,7 @@ package se.nbis.lega.inbox.configuration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.SimpleByteBufferAllocator;
-import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
+import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.auth.password.UserAuthPasswordFactory;
@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -29,10 +30,14 @@ import java.util.Collections;
 public class SFTPConfiguration {
 
     private int inboxPort;
+    private String s3AccessKey;
 
     private SftpEventListener sftpEventListener;
     private PasswordAuthenticator passwordAuthenticator;
     private PublickeyAuthenticator publicKeyAuthenticator;
+
+    private FileSystemFactory localFileSystemFactory;
+    private FileSystemFactory s3FileSystemFactory;
 
     @Bean
     public SshServer sshServer() throws IOException {
@@ -47,21 +52,21 @@ public class SFTPConfiguration {
         SftpSubsystemFactory sftpSubsystemFactory = new SftpSubsystemFactory();
         sftpSubsystemFactory.addSftpEventListener(sftpEventListener);
         sshd.setSubsystemFactories(Collections.singletonList(sftpSubsystemFactory));
-        sshd.setFileSystemFactory(virtualFileSystemFactory());
+        sshd.setFileSystemFactory(StringUtils.isEmpty(s3AccessKey) ? localFileSystemFactory : s3FileSystemFactory);
         sshd.setPasswordAuthenticator(passwordAuthenticator);
         sshd.setPublickeyAuthenticator(publicKeyAuthenticator);
         sshd.start();
         return sshd;
     }
 
-    @Bean
-    public VirtualFileSystemFactory virtualFileSystemFactory() {
-        return new VirtualFileSystemFactory();
-    }
-
     @Value("${inbox.port}")
     public void setInboxPort(int inboxPort) {
         this.inboxPort = inboxPort;
+    }
+
+    @Value("${inbox.s3.access-key}")
+    public void setS3AccessKey(String s3AccessKey) {
+        this.s3AccessKey = s3AccessKey;
     }
 
     @Autowired
@@ -77,6 +82,16 @@ public class SFTPConfiguration {
     @Autowired
     public void setPublicKeyAuthenticator(PublickeyAuthenticator publicKeyAuthenticator) {
         this.publicKeyAuthenticator = publicKeyAuthenticator;
+    }
+
+    @Autowired
+    public void setLocalFileSystemFactory(FileSystemFactory localFileSystemFactory) {
+        this.localFileSystemFactory = localFileSystemFactory;
+    }
+
+    @Autowired
+    public void setS3FileSystemFactory(FileSystemFactory s3FileSystemFactory) {
+        this.s3FileSystemFactory = s3FileSystemFactory;
     }
 
 }
