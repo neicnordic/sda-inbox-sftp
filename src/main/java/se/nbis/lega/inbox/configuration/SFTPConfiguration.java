@@ -1,6 +1,5 @@
 package se.nbis.lega.inbox.configuration;
 
-import com.amazonaws.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.SimpleByteBufferAllocator;
@@ -30,14 +29,12 @@ import java.util.Collections;
 public class SFTPConfiguration {
 
     private int inboxPort;
-    private String s3AccessKey;
 
     private SftpEventListener sftpEventListener;
     private PasswordAuthenticator passwordAuthenticator;
     private PublickeyAuthenticator publicKeyAuthenticator;
 
     private FileSystemFactory localFileSystemFactory;
-    private FileSystemFactory s3FileSystemFactory;
 
     @Bean
     public SshServer sshServer() throws IOException {
@@ -52,7 +49,7 @@ public class SFTPConfiguration {
         SftpSubsystemFactory sftpSubsystemFactory = new SftpSubsystemFactory();
         sftpSubsystemFactory.addSftpEventListener(sftpEventListener);
         sshd.setSubsystemFactories(Collections.singletonList(sftpSubsystemFactory));
-        sshd.setFileSystemFactory(StringUtils.isNullOrEmpty(s3AccessKey) ? localFileSystemFactory : s3FileSystemFactory);
+        sshd.setFileSystemFactory(localFileSystemFactory);
         sshd.setPasswordAuthenticator(passwordAuthenticator);
         sshd.setPublickeyAuthenticator(publicKeyAuthenticator);
         sshd.start();
@@ -62,11 +59,6 @@ public class SFTPConfiguration {
     @Value("${inbox.port}")
     public void setInboxPort(int inboxPort) {
         this.inboxPort = inboxPort;
-    }
-
-    @Value("${inbox.s3.access-key}")
-    public void setS3AccessKey(String s3AccessKey) {
-        this.s3AccessKey = s3AccessKey;
     }
 
     @Autowired
@@ -87,11 +79,6 @@ public class SFTPConfiguration {
     @Autowired
     public void setLocalFileSystemFactory(FileSystemFactory localFileSystemFactory) {
         this.localFileSystemFactory = localFileSystemFactory;
-    }
-
-    @Autowired
-    public void setS3FileSystemFactory(FileSystemFactory s3FileSystemFactory) {
-        this.s3FileSystemFactory = s3FileSystemFactory;
     }
 
 }
