@@ -7,9 +7,9 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.sshd.server.session.ServerSession;
-import org.apache.sshd.server.subsystem.sftp.AbstractSftpEventListenerAdapter;
 import org.apache.sshd.server.subsystem.sftp.FileHandle;
 import org.apache.sshd.server.subsystem.sftp.Handle;
+import org.apache.sshd.server.subsystem.sftp.SftpEventListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +31,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
+public class InboxSftpEventListener implements SftpEventListener {
 
     private static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList(MessageDigestAlgorithms.MD5, MessageDigestAlgorithms.SHA_256);
 
@@ -51,7 +51,6 @@ public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
         } else {
             handleFileCreationModification(session, localHandle.getFile().toFile());
         }
-        super.written(session, remoteHandle, localHandle, offset, data, dataOffset, dataLen, thrown);
     }
 
     private void handleFileCreationModification(ServerSession session, File file) {
@@ -75,7 +74,6 @@ public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
             // TODO: Think about what to do with the source location (or a case of file removal).
             processUploadedFile(session.getUsername(), dstPath.toFile());
         }
-        super.moved(session, srcPath, dstPath, opts, thrown);
     }
 
     /**
@@ -93,7 +91,6 @@ public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
                 log.error(e.getMessage(), e);
             }
         }
-        super.close(session, remoteHandle, localHandle);
     }
 
     private void processUploadedFile(String username, File file) throws IOException {
