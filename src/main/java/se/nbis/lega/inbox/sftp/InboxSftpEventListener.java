@@ -1,6 +1,5 @@
 package se.nbis.lega.inbox.sftp;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -41,7 +40,7 @@ public class InboxSftpEventListener implements SftpEventListener {
     private String exchange;
     private String routingKeyChecksums;
     private String routingKeyFiles;
-    private AmazonS3 amazonS3;
+
     private Gson gson;
     private RabbitTemplate rabbitTemplate;
 
@@ -50,20 +49,7 @@ public class InboxSftpEventListener implements SftpEventListener {
      */
     @Override
     public void initialized(ServerSession session, int version) {
-        if (amazonS3 != null) {
-            prepareBucket(session);
-        }
         log.info("SFTP session initialized for user: {}", session.getUsername());
-    }
-
-    protected void prepareBucket(ServerSession session) {
-        try {
-            if (!amazonS3.doesBucketExistV2(session.getUsername())) {
-                amazonS3.createBucket(session.getUsername());
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
     }
 
     /**
@@ -96,14 +82,6 @@ public class InboxSftpEventListener implements SftpEventListener {
     @Override
     public void read(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen, int readLen, Throwable thrown) {
         log.info("User {} read file: {}", session.getUsername(), localHandle.getFile());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void writing(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen) {
-
     }
 
     /**
@@ -166,12 +144,12 @@ public class InboxSftpEventListener implements SftpEventListener {
         }
     }
 
-    private void handleFileCreationModification(ServerSession session, File file) {
+    protected void handleFileCreationModification(ServerSession session, File file) {
         if (file.exists() && file.isFile()) {
             boolean fileModified = session.getBooleanProperty(file.getPath(), false);
             if (!fileModified) {
                 session.getProperties().put(file.getPath(), true);
-                log.info("File {} created or modified", file.getPath());
+                log.info("File {} created", file.getPath());
             }
         }
     }
@@ -211,7 +189,7 @@ public class InboxSftpEventListener implements SftpEventListener {
         }
     }
 
-    private void processUploadedFile(String username, File file) throws IOException {
+    protected void processUploadedFile(String username, File file) throws IOException {
         if (file.exists() && file.isFile()) {
             log.info("File {} uploaded or moved by user {}", file.getAbsolutePath(), username);
             String extension = FilenameUtils.getExtension(file.getName());
@@ -244,11 +222,6 @@ public class InboxSftpEventListener implements SftpEventListener {
     @Value("${inbox.mq.routing-key.files}")
     public void setRoutingKeyFiles(String routingKeyFiles) {
         this.routingKeyFiles = routingKeyFiles;
-    }
-
-    @Autowired(required = false)
-    public void setAmazonS3(AmazonS3 amazonS3) {
-        this.amazonS3 = amazonS3;
     }
 
     @Autowired
