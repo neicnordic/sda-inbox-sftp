@@ -1,5 +1,6 @@
 package se.nbis.lega.inbox.sftp;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -7,6 +8,7 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.sshd.server.session.ServerSession;
+import org.apache.sshd.server.subsystem.sftp.DirectoryHandle;
 import org.apache.sshd.server.subsystem.sftp.FileHandle;
 import org.apache.sshd.server.subsystem.sftp.Handle;
 import org.apache.sshd.server.subsystem.sftp.SftpEventListener;
@@ -25,6 +27,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Component that composes and publishes message to MQ upon file uploading completion.
@@ -38,6 +41,7 @@ public class InboxSftpEventListener implements SftpEventListener {
     private String exchange;
     private String routingKeyChecksums;
     private String routingKeyFiles;
+    private AmazonS3 amazonS3;
     private Gson gson;
     private RabbitTemplate rabbitTemplate;
 
@@ -45,7 +49,116 @@ public class InboxSftpEventListener implements SftpEventListener {
      * {@inheritDoc}
      */
     @Override
-    public void written(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen, Throwable thrown) throws IOException {
+    public void initialized(ServerSession session, int version) {
+        if (amazonS3 != null) {
+            prepareBucket(session);
+        }
+        log.info("SFTP session initialized for user: {}", session.getUsername());
+    }
+
+    protected void prepareBucket(ServerSession session) {
+        try {
+            if (!amazonS3.doesBucketExistV2(session.getUsername())) {
+                amazonS3.createBucket(session.getUsername());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void destroying(ServerSession session) {
+        log.info("SFTP session closed for user: {}", session.getUsername());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void open(ServerSession session, String remoteHandle, Handle localHandle) {
+        log.info("User {} opened path: {}", session.getUsername(), localHandle.getFile());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void read(ServerSession session, String remoteHandle, DirectoryHandle localHandle, Map<String, Path> entries) {
+        log.info("User {} read directory: {}", session.getUsername(), localHandle.getFile());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void read(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen, int readLen, Throwable thrown) {
+        log.info("User {} read file: {}", session.getUsername(), localHandle.getFile());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void writing(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen) {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void blocked(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, long length, int mask, Throwable thrown) {
+        log.info("User {} blocked file: {}", session.getUsername(), localHandle.getFile());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void unblocked(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, long length, Throwable thrown) {
+        log.info("User {} unblocked file: {}", session.getUsername(), localHandle.getFile());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void created(ServerSession session, Path path, Map<String, ?> attrs, Throwable thrown) {
+        log.info("User {} created directory: {}", session.getUsername(), path);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removed(ServerSession session, Path path, Throwable thrown) {
+        log.info("User {} removed entry: {}", session.getUsername(), path);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void linked(ServerSession session, Path source, Path target, boolean symLink, Throwable thrown) {
+        log.info("User {} linked {} to {}", session.getUsername(), source, target);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void modifiedAttributes(ServerSession session, Path path, Map<String, ?> attrs, Throwable thrown) {
+        log.info("User {} modified attributes of {}: ", session.getUsername(), path, attrs);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void written(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen, Throwable thrown) {
         if (thrown != null) {
             log.error(thrown.getMessage(), thrown);
         } else {
@@ -67,12 +180,17 @@ public class InboxSftpEventListener implements SftpEventListener {
      * {@inheritDoc}
      */
     @Override
-    public void moved(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts, Throwable thrown) throws IOException {
+    public void moved(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts, Throwable thrown) {
+        log.info("User {} moved entry from {} to {}", session.getUsername(), srcPath, dstPath);
         if (thrown != null) {
             log.error(thrown.getMessage(), thrown);
         } else {
             // TODO: Think about what to do with the source location (or a case of file removal).
-            processUploadedFile(session.getUsername(), dstPath.toFile());
+            try {
+                processUploadedFile(session.getUsername(), dstPath.toFile());
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 
@@ -126,6 +244,11 @@ public class InboxSftpEventListener implements SftpEventListener {
     @Value("${inbox.mq.routing-key.files}")
     public void setRoutingKeyFiles(String routingKeyFiles) {
         this.routingKeyFiles = routingKeyFiles;
+    }
+
+    @Autowired(required = false)
+    public void setAmazonS3(AmazonS3 amazonS3) {
+        this.amazonS3 = amazonS3;
     }
 
     @Autowired
