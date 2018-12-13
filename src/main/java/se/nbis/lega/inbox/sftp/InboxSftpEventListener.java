@@ -14,9 +14,11 @@ import org.apache.sshd.server.subsystem.sftp.SftpEventListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
+import se.nbis.lega.inbox.s3.S3Service;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,17 +34,18 @@ import java.util.Map;
  * Component that composes and publishes message to MQ upon file uploading completion.
  */
 @Slf4j
+@ConditionalOnMissingBean(S3Service.class)
 @Component
 public class InboxSftpEventListener implements SftpEventListener {
 
-    private static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList(MessageDigestAlgorithms.MD5, MessageDigestAlgorithms.SHA_256);
+    public static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList(MessageDigestAlgorithms.MD5, MessageDigestAlgorithms.SHA_256);
 
-    private String exchange;
-    private String routingKeyChecksums;
-    private String routingKeyFiles;
+    protected String exchange;
+    protected String routingKeyChecksums;
+    protected String routingKeyFiles;
 
-    private Gson gson;
-    private RabbitTemplate rabbitTemplate;
+    protected Gson gson;
+    protected RabbitTemplate rabbitTemplate;
 
     /**
      * {@inheritDoc}
