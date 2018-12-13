@@ -5,6 +5,7 @@ import io.minio.errors.InvalidEndpointException;
 import io.minio.errors.InvalidPortException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,7 +22,7 @@ public class S3Configuration {
     private String s3SecretKey;
     private boolean useSSL;
 
-    @ConditionalOnExpression("${inbox.s3.access-key} != null && ${inbox.s3.secret-key} != null")
+    @ConditionalOnExpression("!'${inbox.s3.access-key}'.isEmpty() && !'${inbox.s3.secret-key}'.isEmpty()")
     @Bean
     public MinioClient minioClient() throws InvalidPortException, InvalidEndpointException {
         return new MinioClient(s3Host, Integer.valueOf(s3Port), s3AccessKey, s3SecretKey, s3Region, useSSL);
