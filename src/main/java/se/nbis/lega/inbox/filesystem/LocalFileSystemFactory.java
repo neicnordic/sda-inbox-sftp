@@ -47,9 +47,9 @@ public class LocalFileSystemFactory implements FileSystemFactory {
         }
         File home = new File(root);
         home.mkdirs();
-        log.info("Inbox initialized: {}", root);
-
-        return new RootedFileSystemProvider().newFileSystem(home.toPath(), Collections.emptyMap());
+        FileSystem fileSystem = new RootedFileSystemProvider().newFileSystem(home.toPath(), Collections.emptyMap());
+        log.info("Local file system initialized for user {}, path: {}", username, root);
+        return fileSystem;
     }
 
     @Value("${inbox.local.directory}")
