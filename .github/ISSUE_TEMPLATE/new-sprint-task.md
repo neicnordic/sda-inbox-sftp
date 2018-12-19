@@ -1,6 +1,9 @@
 ---
 name: Sprint Task
 about: Use when creating a new task in a sprint
+title: ''
+labels: ''
+assignees: ''
 
 ---
 
