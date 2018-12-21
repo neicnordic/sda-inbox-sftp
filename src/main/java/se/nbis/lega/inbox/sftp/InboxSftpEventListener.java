@@ -143,18 +143,23 @@ public class InboxSftpEventListener implements SftpEventListener {
         if (thrown != null) {
             log.error(thrown.getMessage(), thrown);
         } else {
-            handleFileCreationModification(session, localHandle.getFile().toFile());
+            handleFileCreationModification(session, localHandle.getFile());
         }
     }
 
-    protected void handleFileCreationModification(ServerSession session, File file) {
+    protected void handleFileCreationModification(ServerSession session, Path path) {
+        File file = path.toFile();
         if (file.exists() && file.isFile()) {
-            boolean fileModified = session.getBooleanProperty(file.getPath(), false);
+            boolean fileModified = session.getBooleanProperty(path.toString(), false);
             if (!fileModified) {
-                session.getProperties().put(file.getPath(), true);
-                log.info("File {} created", file.getPath());
+                fileCreated(session, path);
             }
         }
+    }
+
+    protected void fileCreated(ServerSession session, Path path) {
+        session.getProperties().put(path.toString(), true);
+        log.info("File {} created", path.toString());
     }
 
     /**
@@ -168,7 +173,7 @@ public class InboxSftpEventListener implements SftpEventListener {
         } else {
             // TODO: Think about what to do with the source location (or a case of file removal).
             try {
-                processUploadedFile(session.getUsername(), dstPath.toFile());
+                processUploadedFile(session.getUsername(), dstPath);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -180,21 +185,22 @@ public class InboxSftpEventListener implements SftpEventListener {
      */
     @Override
     public void close(ServerSession session, String remoteHandle, Handle localHandle) {
-        File file = localHandle.getFile().toFile();
-        boolean fileModified = session.getBooleanProperty(file.getPath(), false);
+        Path path = localHandle.getFile();
+        boolean fileModified = session.getBooleanProperty(path.toString(), false);
         if (fileModified) {
             try {
-                processUploadedFile(session.getUsername(), file);
-                session.getProperties().remove(file.getPath());
+                processUploadedFile(session.getUsername(), path);
+                session.getProperties().remove(path.toString());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
         }
     }
 
-    protected void processUploadedFile(String username, File file) throws IOException {
+    protected void processUploadedFile(String username, Path path) throws IOException {
+        File file = path.toFile();
         if (file.exists() && file.isFile()) {
-            log.info("File {} uploaded or moved by user {}", file.getAbsolutePath(), username);
+            log.info("File {} uploaded or moved by user {}", path.toString(), username);
             String extension = FilenameUtils.getExtension(file.getName());
             FileDescriptor fileDescriptor = new FileDescriptor();
             fileDescriptor.setUser(username);
@@ -202,12 +208,12 @@ public class InboxSftpEventListener implements SftpEventListener {
             if (SUPPORTED_ALGORITHMS.contains(extension.toLowerCase()) || SUPPORTED_ALGORITHMS.contains(extension.toUpperCase())) {
                 String digest = FileUtils.readFileToString(file, Charset.defaultCharset());
                 fileDescriptor.setContent(digest);
-                rabbitTemplate.convertAndSend(exchange, routingKeyChecksums, gson.toJson(fileDescriptor));
+//                rabbitTemplate.convertAndSend(exchange, routingKeyChecksums, gson.toJson(fileDescriptor));
             } else {
                 fileDescriptor.setFileSize(FileUtils.sizeOf(file));
                 String digest = DigestUtils.md5Hex(FileUtils.openInputStream(file));
                 fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity(digest, MessageDigestAlgorithms.MD5));
-                rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
+//                rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
             }
         }
     }
