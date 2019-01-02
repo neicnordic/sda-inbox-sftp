@@ -7,10 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
-import se.nbis.lega.inbox.streams.WaitingInputStream;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Path;
 
 @Slf4j
@@ -30,18 +27,17 @@ public class S3Service {
         }
     }
 
-    public void startUpload(String bucket, Path path) {
+    public void upload(String bucket, Path path) {
+        Upload upload = TransferManagerBuilder.standard().withS3Client(amazonS3).build().upload(bucket, getKey(path), path.toFile());
+        log.info(upload.getDescription());
+    }
+
+    private String getKey(Path path) {
         String key = path.toString();
         if (key.startsWith("/")) {
             key = key.substring(1);
         }
-        try {
-            WaitingInputStream waitingInputStream = new WaitingInputStream(new FileInputStream(path.toFile()));
-            Upload upload = TransferManagerBuilder.standard().withS3Client(amazonS3).build().upload(bucket, key, waitingInputStream, null);
-            log.info(upload.getDescription());
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
+        return key;
     }
 
     @Autowired
