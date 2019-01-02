@@ -32,7 +32,14 @@ public class S3Service {
         log.info(upload.getDescription());
     }
 
+    public void move(String bucket, Path srcPath, Path dstPath) {
+        log.info("Moving object from {} to {}", getKey(srcPath), getKey(dstPath));
+        amazonS3.copyObject(bucket, getKey(srcPath), bucket, getKey(dstPath));
+        amazonS3.deleteObject(bucket, getKey(srcPath));
+    }
+
     public void remove(String bucket, Path path) {
+        log.info("Removing object {}", getKey(path));
         amazonS3.deleteObject(bucket, getKey(path));
     }
 

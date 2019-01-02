@@ -143,23 +143,8 @@ public class InboxSftpEventListener implements SftpEventListener {
         if (thrown != null) {
             log.error(thrown.getMessage(), thrown);
         } else {
-            handleFileCreationModification(session, localHandle.getFile());
+            session.getProperties().put(localHandle.getFile().toString(), true);
         }
-    }
-
-    protected void handleFileCreationModification(ServerSession session, Path path) {
-        File file = path.toFile();
-        if (file.exists() && file.isFile()) {
-            boolean fileModified = session.getBooleanProperty(path.toString(), false);
-            if (!fileModified) {
-                fileCreated(session, path);
-            }
-        }
-    }
-
-    protected void fileCreated(ServerSession session, Path path) {
-        session.getProperties().put(path.toString(), true);
-        log.info("File {} created", path.toString());
     }
 
     /**
@@ -167,13 +152,13 @@ public class InboxSftpEventListener implements SftpEventListener {
      */
     @Override
     public void moved(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts, Throwable thrown) {
-        log.info("User {} moved entry from {} to {}", session.getUsername(), srcPath, dstPath);
         if (thrown != null) {
             log.error(thrown.getMessage(), thrown);
         } else {
+            log.info("User {} moved entry from {} to {}", session.getUsername(), srcPath, dstPath);
             // TODO: Think about what to do with the source location (or a case of file removal).
             try {
-                processUploadedFile(session.getUsername(), dstPath);
+                processCreatedFile(session.getUsername(), dstPath);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -189,18 +174,23 @@ public class InboxSftpEventListener implements SftpEventListener {
         boolean fileModified = session.getBooleanProperty(path.toString(), false);
         if (fileModified) {
             try {
-                processUploadedFile(session.getUsername(), path);
-                session.getProperties().remove(path.toString());
+                closed(session, remoteHandle, localHandle);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
         }
     }
 
-    protected void processUploadedFile(String username, Path path) throws IOException {
+    protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException {
+        Path path = localHandle.getFile();
+        processCreatedFile(session.getUsername(), path);
+        session.getProperties().remove(path.toString());
+    }
+
+    protected void processCreatedFile(String username, Path path) throws IOException {
         File file = path.toFile();
         if (file.exists() && file.isFile()) {
-            log.info("File {} uploaded or moved by user {}", path.toString(), username);
+            log.info("File {} created by user {}", path.toString(), username);
             String extension = FilenameUtils.getExtension(file.getName());
             FileDescriptor fileDescriptor = new FileDescriptor();
             fileDescriptor.setUser(username);
