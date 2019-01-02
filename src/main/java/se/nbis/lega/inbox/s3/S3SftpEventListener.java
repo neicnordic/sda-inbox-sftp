@@ -2,13 +2,16 @@ package se.nbis.lega.inbox.s3;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.server.session.ServerSession;
+import org.apache.sshd.server.subsystem.sftp.Handle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.sftp.InboxSftpEventListener;
 
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Path;
+import java.util.Collection;
 
 @Slf4j
 @ConditionalOnBean(S3Service.class)
@@ -30,9 +33,15 @@ public class S3SftpEventListener extends InboxSftpEventListener {
     }
 
     @Override
-    protected void processUploadedFile(String username, Path path) throws IOException {
-        s3Service.upload(username, path);
-        super.processUploadedFile(username, path);
+    public void moved(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts, Throwable thrown) {
+        s3Service.move(session.getUsername(), srcPath, dstPath);
+        super.moved(session, srcPath, dstPath, opts, thrown);
+    }
+
+    @Override
+    protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException {
+        s3Service.upload(session.getUsername(), localHandle.getFile());
+        super.closed(session, remoteHandle, localHandle);
     }
 
     @Autowired
