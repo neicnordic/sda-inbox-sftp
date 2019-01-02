@@ -32,6 +32,10 @@ public class S3Service {
         log.info(upload.getDescription());
     }
 
+    public void remove(String bucket, Path path) {
+        amazonS3.deleteObject(bucket, getKey(path));
+    }
+
     private String getKey(Path path) {
         String key = path.toString();
         if (key.startsWith("/")) {
