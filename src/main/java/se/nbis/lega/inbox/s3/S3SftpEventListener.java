@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.sftp.InboxSftpEventListener;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 @Slf4j
@@ -23,9 +24,9 @@ public class S3SftpEventListener extends InboxSftpEventListener {
     }
 
     @Override
-    protected void fileCreated(ServerSession session, Path path) {
-        super.fileCreated(session, path);
-        s3Service.startUpload(session.getUsername(), path);
+    protected void processUploadedFile(String username, Path path) throws IOException {
+        s3Service.upload(username, path);
+        super.processUploadedFile(username, path);
     }
 
     @Autowired
