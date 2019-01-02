@@ -208,12 +208,12 @@ public class InboxSftpEventListener implements SftpEventListener {
             if (SUPPORTED_ALGORITHMS.contains(extension.toLowerCase()) || SUPPORTED_ALGORITHMS.contains(extension.toUpperCase())) {
                 String digest = FileUtils.readFileToString(file, Charset.defaultCharset());
                 fileDescriptor.setContent(digest);
-//                rabbitTemplate.convertAndSend(exchange, routingKeyChecksums, gson.toJson(fileDescriptor));
+                rabbitTemplate.convertAndSend(exchange, routingKeyChecksums, gson.toJson(fileDescriptor));
             } else {
                 fileDescriptor.setFileSize(FileUtils.sizeOf(file));
                 String digest = DigestUtils.md5Hex(FileUtils.openInputStream(file));
                 fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity(digest, MessageDigestAlgorithms.MD5));
-//                rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
+                rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
             }
         }
     }

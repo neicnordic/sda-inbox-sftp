@@ -24,6 +24,12 @@ public class S3SftpEventListener extends InboxSftpEventListener {
     }
 
     @Override
+    public void removed(ServerSession session, Path path, Throwable thrown) {
+        s3Service.remove(session.getUsername(), path);
+        super.removed(session, path, thrown);
+    }
+
+    @Override
     protected void processUploadedFile(String username, Path path) throws IOException {
         s3Service.upload(username, path);
         super.processUploadedFile(username, path);
