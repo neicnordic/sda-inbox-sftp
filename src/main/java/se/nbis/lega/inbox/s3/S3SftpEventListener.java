@@ -1,5 +1,6 @@
 package se.nbis.lega.inbox.s3;
 
+import com.amazonaws.services.s3.AmazonS3;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.subsystem.sftp.Handle;
@@ -14,7 +15,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 
 @Slf4j
-@ConditionalOnBean(S3Service.class)
+@ConditionalOnBean(AmazonS3.class)
 @Component
 public class S3SftpEventListener extends InboxSftpEventListener {
 

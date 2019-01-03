@@ -1,5 +1,6 @@
 package se.nbis.lega.inbox.sftp;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -7,7 +8,6 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.sshd.server.session.ServerSession;
-import org.apache.sshd.server.subsystem.sftp.DirectoryHandle;
 import org.apache.sshd.server.subsystem.sftp.FileHandle;
 import org.apache.sshd.server.subsystem.sftp.Handle;
 import org.apache.sshd.server.subsystem.sftp.SftpEventListener;
@@ -34,7 +34,7 @@ import java.util.Map;
  * Component that composes and publishes message to MQ upon file uploading completion.
  */
 @Slf4j
-@ConditionalOnMissingBean(S3Service.class)
+@ConditionalOnMissingBean(AmazonS3.class)
 @Component
 public class InboxSftpEventListener implements SftpEventListener {
 
