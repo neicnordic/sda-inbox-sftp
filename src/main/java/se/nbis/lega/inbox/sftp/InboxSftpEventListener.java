@@ -67,30 +67,6 @@ public class InboxSftpEventListener implements SftpEventListener {
      * {@inheritDoc}
      */
     @Override
-    public void open(ServerSession session, String remoteHandle, Handle localHandle) {
-        log.info("User {} opened path: {}", session.getUsername(), localHandle.getFile());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void read(ServerSession session, String remoteHandle, DirectoryHandle localHandle, Map<String, Path> entries) {
-        log.info("User {} read directory: {}", session.getUsername(), localHandle.getFile());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void read(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen, int readLen, Throwable thrown) {
-        log.info("User {} read file: {}", session.getUsername(), localHandle.getFile());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void blocked(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, long length, int mask, Throwable thrown) {
         log.info("User {} blocked file: {}", session.getUsername(), localHandle.getFile());
     }
@@ -155,7 +131,7 @@ public class InboxSftpEventListener implements SftpEventListener {
         if (thrown != null) {
             log.error(thrown.getMessage(), thrown);
         } else {
-            log.info("User {} moved entry from {} to {}", session.getUsername(), srcPath, dstPath);
+            log.info("User {} moved entry {} to {}", session.getUsername(), srcPath, dstPath);
             // TODO: Think about what to do with the source location (or a case of file removal).
             try {
                 processCreatedFile(session.getUsername(), dstPath);
