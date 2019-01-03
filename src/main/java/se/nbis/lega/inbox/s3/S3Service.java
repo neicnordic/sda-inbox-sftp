@@ -1,6 +1,8 @@
 package se.nbis.lega.inbox.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +35,25 @@ public class S3Service {
     }
 
     public void move(String bucket, Path srcPath, Path dstPath) {
-        log.info("Moving object from {} to {}", getKey(srcPath), getKey(dstPath));
+        log.info("Moving {} to {}", getKey(srcPath), getKey(dstPath));
+        if (dstPath.toFile().isDirectory()) {
+            moveFolder(bucket, srcPath, dstPath);
+        } else {
+            moveFile(bucket, srcPath, dstPath);
+        }
+    }
+
+    private void moveFolder(String bucket, Path srcPath, Path dstPath) {
+        ObjectListing objectListing = amazonS3.listObjects(bucket, getKey(srcPath));
+        for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
+            String srcKey = s3ObjectSummary.getKey();
+            String dstKey = getKey(dstPath) + srcKey.replace(getKey(srcPath), "");
+            amazonS3.copyObject(bucket, srcKey, bucket, dstKey);
+            amazonS3.deleteObject(bucket, srcKey);
+        }
+    }
+
+    private void moveFile(String bucket, Path srcPath, Path dstPath) {
         amazonS3.copyObject(bucket, getKey(srcPath), bucket, getKey(dstPath));
         amazonS3.deleteObject(bucket, getKey(srcPath));
     }
