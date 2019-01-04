@@ -18,7 +18,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
-import se.nbis.lega.inbox.s3.S3Service;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Component that composes and publishes message to MQ upon file uploading completion.
+ * <code>SftpEventListener</code> implementation that publishes message to MQ upon file uploading completion.
+ * Optional bean: initialized only if <code>AmazonS3</code> is NOT present in the context.
  */
 @Slf4j
 @ConditionalOnMissingBean(AmazonS3.class)
@@ -157,12 +157,27 @@ public class InboxSftpEventListener implements SftpEventListener {
         }
     }
 
+    /**
+     * Triggered when file was closed after modification (not after reading).
+     *
+     * @param session      SFTP session.
+     * @param remoteHandle Remote handle.
+     * @param localHandle  Local handle.
+     * @throws IOException In case of an IO error.
+     */
     protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException {
         Path path = localHandle.getFile();
         processCreatedFile(session.getUsername(), path);
         session.getProperties().remove(path.toString());
     }
 
+    /**
+     * Sends message to CEGA.
+     *
+     * @param username Username.
+     * @param path     Path to affected file.
+     * @throws IOException In case of an IO error.
+     */
     protected void processCreatedFile(String username, Path path) throws IOException {
         File file = path.toFile();
         if (file.exists() && file.isFile()) {
