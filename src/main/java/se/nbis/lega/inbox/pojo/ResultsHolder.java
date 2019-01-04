@@ -6,6 +6,9 @@ import lombok.ToString;
 
 import java.util.Collection;
 
+/**
+ * Technical POJO for parsing JSON response from CEGA.
+ */
 @ToString
 @Data
 public class ResultsHolder {

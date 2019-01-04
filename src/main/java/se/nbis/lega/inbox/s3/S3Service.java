@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 
+/**
+ * Service for communicating with S3 backend.
+ * Optional bean: initialized only if <code>AmazonS3</code> is present in the context.
+ */
 @Slf4j
 @ConditionalOnBean(AmazonS3.class)
 @Service
@@ -19,6 +23,11 @@ public class S3Service {
 
     private AmazonS3 amazonS3;
 
+    /**
+     * Creates a bucket with a username if it doesn't exist yet.
+     *
+     * @param username Username.
+     */
     public void prepareBucket(String username) {
         try {
             if (!amazonS3.doesBucketExistV2(username)) {
@@ -29,11 +38,24 @@ public class S3Service {
         }
     }
 
+    /**
+     * Uploads a file to a specified bucket.
+     *
+     * @param bucket Bucket name.
+     * @param path   Path of the file.
+     */
     public void upload(String bucket, Path path) {
         Upload upload = TransferManagerBuilder.standard().withS3Client(amazonS3).build().upload(bucket, getKey(path), path.toFile());
         log.info(upload.getDescription());
     }
 
+    /**
+     * Moves a file from one location to another.
+     *
+     * @param bucket  Bucket name.
+     * @param srcPath Source location.
+     * @param dstPath Destination location.
+     */
     public void move(String bucket, Path srcPath, Path dstPath) {
         log.info("Moving {} to {}", getKey(srcPath), getKey(dstPath));
         if (dstPath.toFile().isDirectory()) {
@@ -58,6 +80,12 @@ public class S3Service {
         amazonS3.deleteObject(bucket, getKey(srcPath));
     }
 
+    /**
+     * Removes file by path.
+     *
+     * @param bucket Bucket name.
+     * @param path   Path to file to remove.
+     */
     public void remove(String bucket, Path path) {
         log.info("Removing object {}", getKey(path));
         amazonS3.deleteObject(bucket, getKey(path));

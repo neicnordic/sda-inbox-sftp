@@ -14,6 +14,10 @@ import java.nio.file.CopyOption;
 import java.nio.file.Path;
 import java.util.Collection;
 
+/**
+ * <code>SftpEventListener</code> implementation with support for S3 operations.
+ * Optional bean: initialized only if <code>AmazonS3</code> is present in the context.
+ */
 @Slf4j
 @ConditionalOnBean(AmazonS3.class)
 @Component
@@ -21,24 +25,36 @@ public class S3SftpEventListener extends InboxSftpEventListener {
 
     private S3Service s3Service;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialized(ServerSession session, int version) {
         s3Service.prepareBucket(session.getUsername());
         super.initialized(session, version);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removed(ServerSession session, Path path, Throwable thrown) {
         s3Service.remove(session.getUsername(), path);
         super.removed(session, path, thrown);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void moved(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts, Throwable thrown) {
         s3Service.move(session.getUsername(), srcPath, dstPath);
         super.moved(session, srcPath, dstPath, opts, thrown);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException {
         s3Service.upload(session.getUsername(), localHandle.getFile());

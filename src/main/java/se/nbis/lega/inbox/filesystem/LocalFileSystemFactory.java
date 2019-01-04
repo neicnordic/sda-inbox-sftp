@@ -30,12 +30,18 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.util.Collections;
 
+/**
+ * SFTP filesystem factory that backs Mina with <code>RootedFileSystem</code>.
+ */
 @Slf4j
 @Service
 public class LocalFileSystemFactory implements FileSystemFactory {
 
     private String inboxFolder;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public FileSystem createFileSystem(Session session) throws IOException {
         String username = session.getUsername();
