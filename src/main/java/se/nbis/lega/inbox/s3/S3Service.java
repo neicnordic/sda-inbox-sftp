@@ -11,6 +11,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Service for communicating with S3 backend.
@@ -26,26 +28,35 @@ public class S3Service {
     /**
      * Creates a bucket with a username if it doesn't exist yet.
      *
-     * @param username Username.
+     * @param bucket Bucket name.
      */
-    public void prepareBucket(String username) {
+    public void prepareBucket(String bucket) {
         try {
-            if (!amazonS3.doesBucketExistV2(username)) {
-                amazonS3.createBucket(username);
+            if (!amazonS3.doesBucketExistV2(bucket)) {
+                amazonS3.createBucket(bucket);
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
     }
 
+    public Collection<String> listKeys(String bucket) {
+        return amazonS3.listObjects(bucket).getObjectSummaries().stream().map(S3ObjectSummary::getKey).collect(Collectors.toSet());
+    }
+
     /**
-     * Uploads a file to a specified bucket.
+     * Uploads a file to a specified bucket synchronously.
      *
      * @param bucket Bucket name.
+     * @param key    S3 key. If not specified - obtained from path.
      * @param path   Path of the file.
+     * @param sync   <code>true</code> for synchronous upload, <code>false</code> otherwise.
      */
-    public void upload(String bucket, Path path) {
-        Upload upload = TransferManagerBuilder.standard().withS3Client(amazonS3).build().upload(bucket, getKey(path), path.toFile());
+    public void upload(String bucket, String key, Path path, boolean sync) throws InterruptedException {
+        Upload upload = TransferManagerBuilder.standard().withS3Client(amazonS3).build().upload(bucket, key == null ? getKey(path) : key, path.toFile());
+        if (sync) {
+            upload.waitForUploadResult();
+        }
         log.info(upload.getDescription());
     }
 
