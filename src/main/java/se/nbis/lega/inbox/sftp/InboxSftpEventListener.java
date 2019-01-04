@@ -185,7 +185,7 @@ public class InboxSftpEventListener implements SftpEventListener {
             String extension = FilenameUtils.getExtension(file.getName());
             FileDescriptor fileDescriptor = new FileDescriptor();
             fileDescriptor.setUser(username);
-            fileDescriptor.setFilePath(file.getAbsolutePath());
+            fileDescriptor.setFilePath(getFilePath(path));
             if (SUPPORTED_ALGORITHMS.contains(extension.toLowerCase()) || SUPPORTED_ALGORITHMS.contains(extension.toUpperCase())) {
                 String digest = FileUtils.readFileToString(file, Charset.defaultCharset());
                 fileDescriptor.setContent(digest);
@@ -197,6 +197,10 @@ public class InboxSftpEventListener implements SftpEventListener {
                 rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
             }
         }
+    }
+
+    protected String getFilePath(Path path) {
+        return path.toFile().getAbsolutePath();
     }
 
     @Value("${inbox.mq.exchange}")

@@ -61,6 +61,11 @@ public class S3SftpEventListener extends InboxSftpEventListener {
         super.closed(session, remoteHandle, localHandle);
     }
 
+    @Override
+    protected String getFilePath(Path path) {
+        return s3Service.getKey(path);
+    }
+
     @Autowired
     public void setS3Service(S3Service s3Service) {
         this.s3Service = s3Service;
