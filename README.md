@@ -36,8 +36,8 @@ checksum.
 Environment variables used:
 
 
-| Variable name         | Default value      | Description |
-|-----------------------|--------------------|-------------|
+| Variable name         | Default value      | Description                                                |
+|-----------------------|--------------------|------------------------------------------------------------|
 | BROKER_USERNAME       | guest              | RabbitMQ broker username                                   |
 | BROKER_PASSWORD       | guest              | RabbitMQ broker password                                   |
 | BROKER_HOST           | mq                 | RabbitMQ broker host                                       |
