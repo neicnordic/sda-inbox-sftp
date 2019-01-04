@@ -91,7 +91,13 @@ public class S3Service {
         amazonS3.deleteObject(bucket, getKey(path));
     }
 
-    private String getKey(Path path) {
+    /**
+     * Converts filesystem <code>path</code> to S3 key.
+     *
+     * @param path Filesystem <code>path</code>.
+     * @return S3 key.
+     */
+    public String getKey(Path path) {
         String key = path.toString();
         if (key.startsWith("/")) {
             key = key.substring(1);
