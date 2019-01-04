@@ -165,7 +165,7 @@ public class InboxSftpEventListener implements SftpEventListener {
      * @param localHandle  Local handle.
      * @throws IOException In case of an IO error.
      */
-    protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException {
+    protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException, InterruptedException {
         Path path = localHandle.getFile();
         processCreatedFile(session.getUsername(), path);
         session.getProperties().remove(path.toString());

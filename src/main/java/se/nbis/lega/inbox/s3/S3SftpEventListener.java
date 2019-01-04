@@ -56,8 +56,8 @@ public class S3SftpEventListener extends InboxSftpEventListener {
      * {@inheritDoc}
      */
     @Override
-    protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException {
-        s3Service.upload(session.getUsername(), localHandle.getFile());
+    protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException, InterruptedException {
+        s3Service.upload(session.getUsername(), null, localHandle.getFile(), true);
         super.closed(session, remoteHandle, localHandle);
     }
 
