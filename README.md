@@ -36,14 +36,19 @@ checksum.
 Environment variables used:
 
 
-| Variable name         | Default value |
-|-----------------------|---------------|
-| BROKER_USERNAME       | guest         |
-| BROKER_PASSWORD       | guest         |
-| BROKER_HOST           | mq            |
-| BROKER_PORT           | 5672          |
-| INBOX_PORT            | 2222          |
-| INBOX_LOCATION        | /ega/inbox/   |
-| CACHE_TTL             | 3600.0        |
-| CEGA_ENDPOINT         |               |
-| CEGA_ENDPOINT_CREDS   |               |
+| Variable name         | Default value      | Description |
+|-----------------------|--------------------|-------------|
+| BROKER_USERNAME       | guest              | RabbitMQ broker username                                   |
+| BROKER_PASSWORD       | guest              | RabbitMQ broker password                                   |
+| BROKER_HOST           | mq                 | RabbitMQ broker host                                       |
+| BROKER_PORT           | 5672               | RabbitMQ broker port                                       |
+| INBOX_PORT            | 2222               | Inbox port                                                 |
+| INBOX_LOCATION        | /ega/inbox/        | Path to POSIX Inbox backend                                |
+| CACHE_TTL             | 3600.0             | CEGA credentials time-to-live                              |
+| CEGA_ENDPOINT         |                    | CEGA REST endpoint                                         |
+| CEGA_ENDPOINT_CREDS   |                    | CEGA REST credentials                                      |
+| S3_ENDPOINT           | inbox-backend:9000 | Inbox S3 backend URL                                       |
+| S3_REGION             | us-east-1          | Inbox S3 backend region (us-east-1 is default in Minio)    |
+| S3_ACCESS_KEY         |                    | Inbox S3 backend access key (S3 disabled if not specified) |
+| S3_SECRET_KEY         |                    | Inbox S3 backend secret key (S3 disabled if not specified) |
+| USE_SSL               | true               | true if S3 Inbox backend should be accessed by HTTPS       |
