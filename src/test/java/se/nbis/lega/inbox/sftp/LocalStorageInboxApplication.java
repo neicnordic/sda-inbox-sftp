@@ -5,8 +5,7 @@ import org.mockito.stubbing.Answer;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.client.RestTemplate;
@@ -24,17 +23,13 @@ import static org.mockito.Mockito.mock;
  * Test Spring Boot application's main class with some configuration and some beans defined.
  */
 @ComponentScan(basePackages = "se.nbis.lega.inbox")
-@SpringBootApplication
+@SpringBootConfiguration
 public class LocalStorageInboxApplication {
 
     private String exchange;
     private String routingKeyFiles;
 
     private Gson gson;
-
-    public static void main(String[] args) {
-        SpringApplication.run(LocalStorageInboxApplication.class, args);
-    }
 
     @Bean
     public RabbitTemplate rabbitTemplate() {
