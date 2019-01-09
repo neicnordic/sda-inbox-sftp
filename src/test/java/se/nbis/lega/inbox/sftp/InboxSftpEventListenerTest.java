@@ -37,7 +37,7 @@ public class InboxSftpEventListenerTest extends InboxTest {
 
     @Before
     public void setUp() throws IOException {
-        File dataFolder = new File(inboxFolder);
+        File dataFolder = new File(System.getProperty("user.dir"));
         file = File.createTempFile("data", ".raw", dataFolder);
         file.deleteOnExit();
         FileUtils.writeStringToFile(file, "hello", Charset.defaultCharset());
@@ -64,7 +64,9 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        assertEquals(inboxFolder + "/" + username + "/" + file.getName(), fileDescriptor.getFilePath());
+        String expectedPath = inboxFolder + "/" + username + "/" + file.getName();
+        assertTrue(new File(expectedPath).exists());
+        assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
@@ -80,7 +82,9 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = hashBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        assertEquals(inboxFolder + "/" + username + "/" + hash.getName(), fileDescriptor.getFilePath());
+        String expectedPath = inboxFolder + "/" + username + "/" + hash.getName();
+        assertTrue(new File(expectedPath).exists());
+        assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertEquals(FileUtils.readFileToString(hash, Charset.defaultCharset()), fileDescriptor.getContent());
         assertEquals(0, fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
@@ -99,7 +103,9 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        assertEquals(inboxFolder + "/" + username + "/test/" + file.getName(), fileDescriptor.getFilePath());
+        String expectedPath = inboxFolder + "/" + username + "/test/" + file.getName();
+        assertTrue(new File(expectedPath).exists());
+        assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
