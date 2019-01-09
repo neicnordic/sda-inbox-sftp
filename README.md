@@ -31,6 +31,15 @@ The user's home directory is created when its credentials upon successful login.
 Moreover, for each user, we detect when the file upload is completed and compute its
 checksum. 
 
+## S3 integration
+
+Default storage back-end for the inbox is local file-system. But we also support S3 service as a back-end. It can be 
+enabled using S3-related env-vars (see configuration details below).
+
+If S3 is enabled, then files are still going to be stored locally, but after successful upload, they will going to be 
+uploaded to the specified S3 back-end. With this approach local file-system plays role of so called "staging area", 
+while S3 is the real final destination for the uploaded files.
+
 ## Configuration
 
 Environment variables used:
