@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
  */
 @ComponentScan(basePackages = "se.nbis.lega.inbox")
 @SpringBootApplication
-public class TestInboxApplication {
+public class LocalStorageInboxApplication {
 
     private String exchange;
     private String routingKeyFiles;
@@ -33,7 +33,7 @@ public class TestInboxApplication {
     private Gson gson;
 
     public static void main(String[] args) {
-        SpringApplication.run(TestInboxApplication.class, args);
+        SpringApplication.run(LocalStorageInboxApplication.class, args);
     }
 
     @Bean
