@@ -68,7 +68,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        assertEquals(inboxFolder + "/" + username + "/" + file.getName(), fileDescriptor.getFilePath());
+        assertEquals(file.getName(), fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
@@ -84,7 +84,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = hashBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        assertEquals(inboxFolder + "/" + username + "/" + hash.getName(), fileDescriptor.getFilePath());
+        assertEquals(hash.getName(), fileDescriptor.getFilePath());
         assertEquals(FileUtils.readFileToString(hash, Charset.defaultCharset()), fileDescriptor.getContent());
         assertEquals(0, fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
@@ -103,7 +103,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        assertEquals(inboxFolder + "/" + username + "/test/" + file.getName(), fileDescriptor.getFilePath());
+        assertEquals("test/" + file.getName(), fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
