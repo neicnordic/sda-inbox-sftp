@@ -22,8 +22,6 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertNotNull;
 
-@SpringBootTest(classes = TestInboxApplication.class)
-@TestPropertySource(locations = "classpath:application.properties")
 @RunWith(SpringRunner.class)
 public class InboxAuthenticatorTest extends InboxTest {
 

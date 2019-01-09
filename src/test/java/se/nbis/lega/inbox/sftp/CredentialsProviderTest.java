@@ -17,8 +17,6 @@ import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
 
-@SpringBootTest(classes = TestInboxApplication.class)
-@TestPropertySource(locations = "classpath:application.properties")
 @RunWith(SpringRunner.class)
 public class CredentialsProviderTest extends InboxTest {
 

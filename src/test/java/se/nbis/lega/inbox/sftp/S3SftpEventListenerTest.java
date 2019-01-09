@@ -25,8 +25,10 @@ import java.util.concurrent.BlockingQueue;
 
 import static org.junit.Assert.*;
 
+@SpringBootTest(classes = S3StorageInboxApplication.class)
+@TestPropertySource(locations = "classpath:s3-storage.application.properties")
 @RunWith(SpringRunner.class)
-public class InboxSftpEventListenerTest extends InboxTest {
+public class S3SftpEventListenerTest extends InboxTest {
 
     private int inboxPort;
     private BlockingQueue<FileDescriptor> fileBlockingQueue;

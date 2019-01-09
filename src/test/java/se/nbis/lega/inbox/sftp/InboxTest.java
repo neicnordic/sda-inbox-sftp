@@ -31,8 +31,8 @@ import java.util.UUID;
 
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(classes = TestInboxApplication.class)
-@TestPropertySource(locations = "classpath:application.properties")
+@SpringBootTest(classes = LocalStorageInboxApplication.class)
+@TestPropertySource(locations = "classpath:local-storage.application.properties")
 @RunWith(SpringRunner.class)
 public abstract class InboxTest {
 
