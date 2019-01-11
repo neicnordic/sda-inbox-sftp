@@ -8,9 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import se.nbis.lega.inbox.pojo.KeyAlgorithm;
 import se.nbis.lega.inbox.pojo.PasswordHashingAlgorithm;
@@ -22,8 +20,6 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertNotNull;
 
-@SpringBootTest(classes = TestInboxApplication.class)
-@TestPropertySource(locations = "classpath:application.properties")
 @RunWith(SpringRunner.class)
 public class InboxAuthenticatorTest extends InboxTest {
 

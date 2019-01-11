@@ -64,6 +64,16 @@
             <artifactId>commons-io</artifactId>
             <version>2.6</version>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.11.467</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -97,6 +107,12 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.findify</groupId>
+            <artifactId>s3mock_2.12</artifactId>
+            <version>0.2.5</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 
@@ -116,10 +132,6 @@
                     <!-- Next line needs to be a single line, otherwise plugin crashes-->
                     <entryPoint>["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005", "-jar", "/${project.build.finalName}.jar", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap"]
                     </entryPoint>
-                    <healthcheck>
-                        <options>--interval=10s</options>
-                        <cmd>curl --fail http://localhost:8080/healthcheck || exit 1</cmd>
-                    </healthcheck>
                     <!-- copy the service's jar fileDescriptor from target into the root directory of the image -->
                     <resources>
                         <resource>

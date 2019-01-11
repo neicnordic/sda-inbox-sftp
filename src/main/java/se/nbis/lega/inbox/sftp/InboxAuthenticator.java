@@ -8,7 +8,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.Crypt;
 import org.apache.commons.io.IOUtils;
 import org.apache.sshd.common.config.keys.KeyUtils;
-import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.auth.password.PasswordChangeRequiredException;
@@ -24,7 +23,6 @@ import se.nbis.lega.inbox.pojo.Credentials;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
@@ -46,9 +44,7 @@ import static org.apache.sshd.common.config.keys.KeyUtils.RSA_ALGORITHM;
 public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthenticator {
 
     private long defaultCacheTTL;
-    private String inboxFolder;
     private CredentialsProvider credentialsProvider;
-    private VirtualFileSystemFactory fileSystemFactory;
 
     // Caffeine cache with entry-specific TTLs
     private LoadingCache<String, Credentials> credentialsCache = Caffeine.newBuilder()
@@ -75,14 +71,9 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         try {
             Credentials credentials = credentialsCache.get(username);
             String hash = credentials.getPasswordHash();
-            boolean result = StringUtils.startsWithIgnoreCase(hash, "$2")
+            return StringUtils.startsWithIgnoreCase(hash, "$2")
                     ? BCrypt.checkpw(password, hash)
                     : ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, hash));
-
-            if (result) {
-                createHomeDir(inboxFolder, username);
-            }
-            return result;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return false;
@@ -97,25 +88,11 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         try {
             Credentials credentials = credentialsCache.get(username);
             PublicKey publicKey = readKey(credentials.getPublicKey());
-            boolean result = KeyUtils.compareKeys(publicKey, key);
-            if (result) {
-                createHomeDir(inboxFolder, username);
-            }
-            return result;
+            return KeyUtils.compareKeys(publicKey, key);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return false;
         }
-    }
-
-    private void createHomeDir(String inboxFolder, String username) {
-        if (!inboxFolder.endsWith(File.separator)) {
-            inboxFolder = inboxFolder + File.separator;
-        }
-        log.info("Inbox initialized: {}", inboxFolder + username);
-        File home = new File(inboxFolder + username);
-        home.mkdirs();
-        fileSystemFactory.setUserHomeDir(username, home.toPath());
     }
 
     // according to https://tools.ietf.org/html/rfc4253#section-6.6
@@ -158,19 +135,9 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         this.defaultCacheTTL = defaultCacheTTL;
     }
 
-    @Value("${inbox.directory}")
-    public void setInboxFolder(String inboxFolder) {
-        this.inboxFolder = inboxFolder;
-    }
-
     @Autowired
     public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
         this.credentialsProvider = credentialsProvider;
-    }
-
-    @Autowired
-    public void setFileSystemFactory(VirtualFileSystemFactory fileSystemFactory) {
-        this.fileSystemFactory = fileSystemFactory;
     }
 
 }

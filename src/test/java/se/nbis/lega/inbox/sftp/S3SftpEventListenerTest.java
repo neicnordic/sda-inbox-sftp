@@ -1,5 +1,6 @@
 package se.nbis.lega.inbox.sftp;
 
+import com.amazonaws.services.s3.AmazonS3;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
@@ -12,6 +13,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
@@ -23,12 +26,15 @@ import java.util.concurrent.BlockingQueue;
 
 import static org.junit.Assert.*;
 
+@SpringBootTest(classes = S3StorageInboxApplication.class)
+@TestPropertySource(locations = "classpath:s3-storage.application.properties")
 @RunWith(SpringRunner.class)
-public class InboxSftpEventListenerTest extends InboxTest {
+public class S3SftpEventListenerTest extends InboxTest {
 
     private int inboxPort;
     private BlockingQueue<FileDescriptor> fileBlockingQueue;
     private BlockingQueue<FileDescriptor> hashBlockingQueue;
+    private AmazonS3 amazonS3;
 
     private File file;
     private File hash;
@@ -64,9 +70,8 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        String expectedPath = inboxFolder + "/" + username + "/" + file.getName();
-        assertTrue(new File(expectedPath).exists());
-        assertEquals(expectedPath, fileDescriptor.getFilePath());
+        assertEquals(file.getName(), fileDescriptor.getFilePath());
+        assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
@@ -82,9 +87,8 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = hashBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        String expectedPath = inboxFolder + "/" + username + "/" + hash.getName();
-        assertTrue(new File(expectedPath).exists());
-        assertEquals(expectedPath, fileDescriptor.getFilePath());
+        assertEquals(hash.getName(), fileDescriptor.getFilePath());
+        assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertEquals(FileUtils.readFileToString(hash, Charset.defaultCharset()), fileDescriptor.getContent());
         assertEquals(0, fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
@@ -103,15 +107,26 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        String expectedPath = inboxFolder + "/" + username + "/test/" + file.getName();
-        assertTrue(new File(expectedPath).exists());
-        assertEquals(expectedPath, fileDescriptor.getFilePath());
+        assertEquals("test/" + file.getName(), fileDescriptor.getFilePath());
+        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), file.getName()));
+        assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
         assertNotNull(encryptedIntegrity);
         assertEquals(MessageDigestAlgorithms.MD5, encryptedIntegrity.getAlgorithm());
         assertEquals(DigestUtils.md5Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
+    }
+
+    @Test
+    public void removeFile() throws IOException {
+        sftpClient.put(file.getAbsolutePath(), file.getName());
+
+        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
+        sftpClient.rm(file.getName());
+
+        assertNotNull(fileDescriptor);
+        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
     }
 
     @Value("${inbox.port}")
@@ -127,6 +142,11 @@ public class InboxSftpEventListenerTest extends InboxTest {
     @Autowired
     public void setHashBlockingQueue(BlockingQueue<FileDescriptor> hashBlockingQueue) {
         this.hashBlockingQueue = hashBlockingQueue;
+    }
+
+    @Autowired
+    public void setAmazonS3(AmazonS3 amazonS3) {
+        this.amazonS3 = amazonS3;
     }
 
 }

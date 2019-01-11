@@ -3,9 +3,7 @@ package se.nbis.lega.inbox.sftp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestClientException;
 import se.nbis.lega.inbox.pojo.Credentials;
@@ -17,8 +15,6 @@ import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
 
-@SpringBootTest(classes = TestInboxApplication.class)
-@TestPropertySource(locations = "classpath:application.properties")
 @RunWith(SpringRunner.class)
 public class CredentialsProviderTest extends InboxTest {
 

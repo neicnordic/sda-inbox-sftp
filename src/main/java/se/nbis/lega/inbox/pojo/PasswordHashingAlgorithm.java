@@ -1,5 +1,8 @@
 package se.nbis.lega.inbox.pojo;
 
+/**
+ * Hashing algorithm for the password.
+ */
 public enum PasswordHashingAlgorithm {
 
     MD5("$1"),

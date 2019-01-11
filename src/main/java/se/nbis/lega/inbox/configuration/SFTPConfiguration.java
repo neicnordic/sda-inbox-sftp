@@ -3,7 +3,7 @@ package se.nbis.lega.inbox.configuration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.SimpleByteBufferAllocator;
-import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
+import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.auth.password.UserAuthPasswordFactory;
@@ -34,6 +34,8 @@ public class SFTPConfiguration {
     private PasswordAuthenticator passwordAuthenticator;
     private PublickeyAuthenticator publicKeyAuthenticator;
 
+    private FileSystemFactory localFileSystemFactory;
+
     @Bean
     public SshServer sshServer() throws IOException {
         // As per recommendation here: https://mina.apache.org/mina-project/faq.html#i-get-outofmemoryerror-or-response-timeout-and-connection-reset-under-heavy-load
@@ -47,16 +49,11 @@ public class SFTPConfiguration {
         SftpSubsystemFactory sftpSubsystemFactory = new SftpSubsystemFactory();
         sftpSubsystemFactory.addSftpEventListener(sftpEventListener);
         sshd.setSubsystemFactories(Collections.singletonList(sftpSubsystemFactory));
-        sshd.setFileSystemFactory(virtualFileSystemFactory());
+        sshd.setFileSystemFactory(localFileSystemFactory);
         sshd.setPasswordAuthenticator(passwordAuthenticator);
         sshd.setPublickeyAuthenticator(publicKeyAuthenticator);
         sshd.start();
         return sshd;
-    }
-
-    @Bean
-    public VirtualFileSystemFactory virtualFileSystemFactory() {
-        return new VirtualFileSystemFactory();
     }
 
     @Value("${inbox.port}")
@@ -77,6 +74,11 @@ public class SFTPConfiguration {
     @Autowired
     public void setPublicKeyAuthenticator(PublickeyAuthenticator publicKeyAuthenticator) {
         this.publicKeyAuthenticator = publicKeyAuthenticator;
+    }
+
+    @Autowired
+    public void setLocalFileSystemFactory(FileSystemFactory localFileSystemFactory) {
+        this.localFileSystemFactory = localFileSystemFactory;
     }
 
 }

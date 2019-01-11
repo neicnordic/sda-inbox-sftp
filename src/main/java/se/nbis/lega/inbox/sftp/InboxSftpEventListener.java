@@ -1,5 +1,6 @@
 package se.nbis.lega.inbox.sftp;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -7,12 +8,13 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.sshd.server.session.ServerSession;
-import org.apache.sshd.server.subsystem.sftp.AbstractSftpEventListenerAdapter;
 import org.apache.sshd.server.subsystem.sftp.FileHandle;
 import org.apache.sshd.server.subsystem.sftp.Handle;
+import org.apache.sshd.server.subsystem.sftp.SftpEventListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
@@ -25,57 +27,118 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Component that composes and publishes message to MQ upon file uploading completion.
+ * <code>SftpEventListener</code> implementation that publishes message to MQ upon file uploading completion.
+ * Optional bean: initialized only if <code>AmazonS3</code> is NOT present in the context.
  */
 @Slf4j
+@ConditionalOnMissingBean(AmazonS3.class)
 @Component
-public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
+public class InboxSftpEventListener implements SftpEventListener {
 
-    private static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList(MessageDigestAlgorithms.MD5, MessageDigestAlgorithms.SHA_256);
+    public static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList(MessageDigestAlgorithms.MD5, MessageDigestAlgorithms.SHA_256);
 
-    private String exchange;
-    private String routingKeyChecksums;
-    private String routingKeyFiles;
-    private Gson gson;
-    private RabbitTemplate rabbitTemplate;
+    protected String exchange;
+    protected String routingKeyChecksums;
+    protected String routingKeyFiles;
+
+    protected Gson gson;
+    protected RabbitTemplate rabbitTemplate;
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void written(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen, Throwable thrown) throws IOException {
+    public void initialized(ServerSession session, int version) {
+        log.info("SFTP session initialized for user: {}", session.getUsername());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void destroying(ServerSession session) {
+        log.info("SFTP session closed for user: {}", session.getUsername());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void blocked(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, long length, int mask, Throwable thrown) {
+        log.info("User {} blocked file: {}", session.getUsername(), localHandle.getFile());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void unblocked(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, long length, Throwable thrown) {
+        log.info("User {} unblocked file: {}", session.getUsername(), localHandle.getFile());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void created(ServerSession session, Path path, Map<String, ?> attrs, Throwable thrown) {
+        log.info("User {} created directory: {}", session.getUsername(), path);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removed(ServerSession session, Path path, Throwable thrown) {
+        log.info("User {} removed entry: {}", session.getUsername(), path);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void linked(ServerSession session, Path source, Path target, boolean symLink, Throwable thrown) {
+        log.info("User {} linked {} to {}", session.getUsername(), source, target);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void modifiedAttributes(ServerSession session, Path path, Map<String, ?> attrs, Throwable thrown) {
+        log.info("User {} modified attributes of {}: ", session.getUsername(), path, attrs);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void written(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen, Throwable thrown) {
         if (thrown != null) {
             log.error(thrown.getMessage(), thrown);
         } else {
-            handleFileCreationModification(session, localHandle.getFile().toFile());
+            session.getProperties().put(localHandle.getFile().toString(), true);
         }
-        super.written(session, remoteHandle, localHandle, offset, data, dataOffset, dataLen, thrown);
     }
 
-    private void handleFileCreationModification(ServerSession session, File file) {
-        if (file.exists() && file.isFile()) {
-            boolean fileModified = session.getBooleanProperty(file.getPath(), false);
-            if (!fileModified) {
-                session.getProperties().put(file.getPath(), true);
-                log.info("File {} created or modified", file.getPath());
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void moved(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts, Throwable thrown) {
+        if (thrown != null) {
+            log.error(thrown.getMessage(), thrown);
+        } else {
+            log.info("User {} moved entry {} to {}", session.getUsername(), srcPath, dstPath);
+            // TODO: Think about what to do with the source location (or a case of file removal).
+            try {
+                processCreatedFile(session.getUsername(), dstPath);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void moved(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts, Throwable thrown) throws IOException {
-        if (thrown != null) {
-            log.error(thrown.getMessage(), thrown);
-        } else {
-            // TODO: Think about what to do with the source location (or a case of file removal).
-            processUploadedFile(session.getUsername(), dstPath.toFile());
-        }
-        super.moved(session, srcPath, dstPath, opts, thrown);
     }
 
     /**
@@ -83,26 +146,46 @@ public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
      */
     @Override
     public void close(ServerSession session, String remoteHandle, Handle localHandle) {
-        File file = localHandle.getFile().toFile();
-        boolean fileModified = session.getBooleanProperty(file.getPath(), false);
+        Path path = localHandle.getFile();
+        boolean fileModified = session.getBooleanProperty(path.toString(), false);
         if (fileModified) {
             try {
-                processUploadedFile(session.getUsername(), file);
-                session.getProperties().remove(file.getPath());
+                closed(session, remoteHandle, localHandle);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
         }
-        super.close(session, remoteHandle, localHandle);
     }
 
-    private void processUploadedFile(String username, File file) throws IOException {
+    /**
+     * Triggered when file was closed after modification (not after reading).
+     *
+     * @param session      SFTP session.
+     * @param remoteHandle Remote handle.
+     * @param localHandle  Local handle.
+     * @throws IOException In case of an IO error.
+     */
+    protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException, InterruptedException {
+        Path path = localHandle.getFile();
+        processCreatedFile(session.getUsername(), path);
+        session.getProperties().remove(path.toString());
+    }
+
+    /**
+     * Sends message to CEGA.
+     *
+     * @param username Username.
+     * @param path     Path to affected file.
+     * @throws IOException In case of an IO error.
+     */
+    protected void processCreatedFile(String username, Path path) throws IOException {
+        File file = path.toFile();
         if (file.exists() && file.isFile()) {
-            log.info("File {} uploaded or moved by user {}", file.getAbsolutePath(), username);
+            log.info("File {} created by user {}", path.toString(), username);
             String extension = FilenameUtils.getExtension(file.getName());
             FileDescriptor fileDescriptor = new FileDescriptor();
             fileDescriptor.setUser(username);
-            fileDescriptor.setFilePath(file.getAbsolutePath());
+            fileDescriptor.setFilePath(getFilePath(path));
             if (SUPPORTED_ALGORITHMS.contains(extension.toLowerCase()) || SUPPORTED_ALGORITHMS.contains(extension.toUpperCase())) {
                 String digest = FileUtils.readFileToString(file, Charset.defaultCharset());
                 fileDescriptor.setContent(digest);
@@ -114,6 +197,10 @@ public class InboxSftpEventListener extends AbstractSftpEventListenerAdapter {
                 rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
             }
         }
+    }
+
+    protected String getFilePath(Path path) {
+        return path.toFile().getAbsolutePath();
     }
 
     @Value("${inbox.mq.exchange}")
