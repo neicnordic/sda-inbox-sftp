@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
+import se.nbis.lega.inbox.pojo.EventType;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
 
 import java.io.File;
@@ -93,6 +94,11 @@ public class InboxSftpEventListener implements SftpEventListener {
     @Override
     public void removed(ServerSession session, Path path, Throwable thrown) {
         log.info("User {} removed entry: {}", session.getUsername(), path);
+        try {
+            processCreatedFile(EventType.REMOVED, session.getUsername(), path);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -134,7 +140,7 @@ public class InboxSftpEventListener implements SftpEventListener {
             log.info("User {} moved entry {} to {}", session.getUsername(), srcPath, dstPath);
             // TODO: Think about what to do with the source location (or a case of file removal).
             try {
-                processCreatedFile(session.getUsername(), dstPath);
+                processCreatedFile(EventType.MOVED, session.getUsername(), dstPath);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -167,18 +173,19 @@ public class InboxSftpEventListener implements SftpEventListener {
      */
     protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException, InterruptedException {
         Path path = localHandle.getFile();
-        processCreatedFile(session.getUsername(), path);
+        processCreatedFile(EventType.CREATED, session.getUsername(), path);
         session.getProperties().remove(path.toString());
     }
 
     /**
-     * Sends message to CEGA.
+     * Handles file event.
      *
-     * @param username Username.
-     * @param path     Path to affected file.
+     * @param eventType The type of file event.
+     * @param username  Username.
+     * @param path      Path to affected file.
      * @throws IOException In case of an IO error.
      */
-    protected void processCreatedFile(String username, Path path) throws IOException {
+    protected void processCreatedFile(EventType eventType, String username, Path path) throws IOException {
         File file = path.toFile();
         if (file.exists() && file.isFile()) {
             log.info("File {} created by user {}", path.toString(), username);
