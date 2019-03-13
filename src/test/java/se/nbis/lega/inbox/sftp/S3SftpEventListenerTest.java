@@ -18,6 +18,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
+import se.nbis.lega.inbox.pojo.Operation;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         file = File.createTempFile("data", ".raw", dataFolder);
         file.deleteOnExit();
         FileUtils.writeStringToFile(file, "hello", Charset.defaultCharset());
-        hash = File.createTempFile("data", ".md5", dataFolder);
+        hash = File.createTempFile("data", ".sha256", dataFolder);
         hash.deleteOnExit();
         FileUtils.writeStringToFile(hash, "hello", Charset.defaultCharset());
 
@@ -74,6 +75,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
+        assertEquals(Operation.UPLOAD.name().toLowerCase(), fileDescriptor.getOperation());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
         assertNotNull(encryptedIntegrity);
         assertEquals(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
@@ -90,9 +92,12 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertEquals(hash.getName(), fileDescriptor.getFilePath());
         assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertEquals(FileUtils.readFileToString(hash, Charset.defaultCharset()), fileDescriptor.getContent());
-        assertEquals(0, fileDescriptor.getFileSize());
-        Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
-        assertNull(encryptedIntegrity);
+        assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
+        assertEquals(Operation.UPLOAD.name().toLowerCase(), fileDescriptor.getOperation());
+        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
+        assertNotNull(encryptedIntegrity);
+        assertEquals(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
+        assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
     }
 
     @Test

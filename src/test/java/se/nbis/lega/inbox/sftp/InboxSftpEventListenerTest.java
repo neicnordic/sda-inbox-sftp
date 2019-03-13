@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.junit4.SpringRunner;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
+import se.nbis.lega.inbox.pojo.Operation;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class InboxSftpEventListenerTest extends InboxTest {
         file = File.createTempFile("data", ".raw", dataFolder);
         file.deleteOnExit();
         FileUtils.writeStringToFile(file, "hello", Charset.defaultCharset());
-        hash = File.createTempFile("data", ".md5", dataFolder);
+        hash = File.createTempFile("data", ".sha256", dataFolder);
         hash.deleteOnExit();
         FileUtils.writeStringToFile(hash, "hello", Charset.defaultCharset());
 
@@ -69,6 +70,7 @@ public class InboxSftpEventListenerTest extends InboxTest {
         assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
+        assertEquals(Operation.UPLOAD.name().toLowerCase(), fileDescriptor.getOperation());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
         assertNotNull(encryptedIntegrity);
         assertEquals(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
@@ -86,9 +88,12 @@ public class InboxSftpEventListenerTest extends InboxTest {
         assertTrue(new File(expectedPath).exists());
         assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertEquals(FileUtils.readFileToString(hash, Charset.defaultCharset()), fileDescriptor.getContent());
-        assertEquals(0, fileDescriptor.getFileSize());
-        Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
-        assertNull(encryptedIntegrity);
+        assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
+        assertEquals(Operation.UPLOAD.name().toLowerCase(), fileDescriptor.getOperation());
+        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
+        assertNotNull(encryptedIntegrity);
+        assertEquals(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
+        assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
     }
 
     @Test
@@ -103,15 +108,38 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
+        String expectedOldPath = inboxFolder + "/" + username + "/" + file.getName();
         String expectedPath = inboxFolder + "/" + username + "/test/" + file.getName();
         assertTrue(new File(expectedPath).exists());
         assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
+        assertEquals(Operation.RENAME.name().toLowerCase(), fileDescriptor.getOperation());
+        assertEquals(expectedOldPath, fileDescriptor.getOldPath());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
         assertNotNull(encryptedIntegrity);
         assertEquals(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
         assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
+    }
+
+    @Test
+    public void removeFile() throws IOException {
+        sftpClient.put(file.getAbsolutePath(), file.getName());
+
+        fileBlockingQueue.poll();
+        sftpClient.rm(file.getName());
+
+        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
+        assertNotNull(fileDescriptor);
+        assertEquals(username, fileDescriptor.getUser());
+        String expectedPath = inboxFolder + "/" + username + "/" + file.getName();
+        assertFalse(new File(expectedPath).exists());
+        assertEquals(expectedPath, fileDescriptor.getFilePath());
+        assertNull(fileDescriptor.getContent());
+        assertEquals(0, fileDescriptor.getFileSize());
+        assertEquals(Operation.REMOVE.name().toLowerCase(), fileDescriptor.getOperation());
+        Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        assertNull(encryptedIntegrity);
     }
 
     @Value("${inbox.port}")
