@@ -5,7 +5,6 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -25,6 +24,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.BlockingQueue;
 
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.junit.Assert.*;
 
 @SpringBootTest(classes = S3StorageInboxApplication.class)
@@ -78,7 +78,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertEquals(Operation.UPLOAD.name().toLowerCase(), fileDescriptor.getOperation());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
         assertNotNull(encryptedIntegrity);
-        assertEquals(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
+        assertEquals(SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
         assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
     }
 
@@ -96,7 +96,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertEquals(Operation.UPLOAD.name().toLowerCase(), fileDescriptor.getOperation());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
         assertNotNull(encryptedIntegrity);
-        assertEquals(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
+        assertEquals(SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
         assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
     }
 
@@ -120,7 +120,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
         assertNotNull(encryptedIntegrity);
-        assertEquals(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
+        assertEquals(SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
         assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
     }
 
