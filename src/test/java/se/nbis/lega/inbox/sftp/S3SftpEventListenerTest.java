@@ -112,8 +112,9 @@ public class S3SftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
+        assertEquals(file.getName(), fileDescriptor.getOldPath());
         assertEquals("test/" + file.getName(), fileDescriptor.getFilePath());
-        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), file.getName()));
+        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getOldPath()));
         assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
