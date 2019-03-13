@@ -5,7 +5,6 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -18,12 +17,14 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
+import se.nbis.lega.inbox.pojo.Operation;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.BlockingQueue;
 
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.junit.Assert.*;
 
 @SpringBootTest(classes = S3StorageInboxApplication.class)
@@ -47,7 +48,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         file = File.createTempFile("data", ".raw", dataFolder);
         file.deleteOnExit();
         FileUtils.writeStringToFile(file, "hello", Charset.defaultCharset());
-        hash = File.createTempFile("data", ".md5", dataFolder);
+        hash = File.createTempFile("data", ".sha256", dataFolder);
         hash.deleteOnExit();
         FileUtils.writeStringToFile(hash, "hello", Charset.defaultCharset());
 
@@ -74,10 +75,11 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
-        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        assertEquals(Operation.UPLOAD.name().toLowerCase(), fileDescriptor.getOperation());
+        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
         assertNotNull(encryptedIntegrity);
-        assertEquals(MessageDigestAlgorithms.MD5, encryptedIntegrity.getAlgorithm());
-        assertEquals(DigestUtils.md5Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
+        assertEquals(SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
+        assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
     }
 
     @Test
@@ -90,13 +92,16 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertEquals(hash.getName(), fileDescriptor.getFilePath());
         assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertEquals(FileUtils.readFileToString(hash, Charset.defaultCharset()), fileDescriptor.getContent());
-        assertEquals(0, fileDescriptor.getFileSize());
-        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
-        assertNull(encryptedIntegrity);
+        assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
+        assertEquals(Operation.UPLOAD.name().toLowerCase(), fileDescriptor.getOperation());
+        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
+        assertNotNull(encryptedIntegrity);
+        assertEquals(SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
+        assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
     }
 
     @Test
-    public void moveFile() throws IOException {
+    public void renameFile() throws IOException {
         sftpClient.put(file.getAbsolutePath(), file.getName());
 
         fileBlockingQueue.poll();
@@ -107,26 +112,36 @@ public class S3SftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
+        assertEquals(file.getName(), fileDescriptor.getOldPath());
         assertEquals("test/" + file.getName(), fileDescriptor.getFilePath());
-        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), file.getName()));
+        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getOldPath()));
         assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
-        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
         assertNotNull(encryptedIntegrity);
-        assertEquals(MessageDigestAlgorithms.MD5, encryptedIntegrity.getAlgorithm());
-        assertEquals(DigestUtils.md5Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
+        assertEquals(SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
+        assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
     }
 
     @Test
     public void removeFile() throws IOException {
         sftpClient.put(file.getAbsolutePath(), file.getName());
 
-        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
+        fileBlockingQueue.poll();
         sftpClient.rm(file.getName());
 
+        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
+        assertEquals(username, fileDescriptor.getUser());
+        String expectedPath = file.getName();
         assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
+        assertEquals(expectedPath, fileDescriptor.getFilePath());
+        assertNull(fileDescriptor.getContent());
+        assertEquals(0, fileDescriptor.getFileSize());
+        assertEquals(Operation.REMOVE.name().toLowerCase(), fileDescriptor.getOperation());
+        Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        assertNull(encryptedIntegrity);
     }
 
     @Value("${inbox.port}")

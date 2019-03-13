@@ -4,7 +4,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.sshd.server.session.ServerSession;
@@ -18,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
+import se.nbis.lega.inbox.pojo.Operation;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +29,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
+import static se.nbis.lega.inbox.pojo.Operation.*;
+
 /**
  * <code>SftpEventListener</code> implementation that publishes message to MQ upon file uploading completion.
  * Optional bean: initialized only if <code>AmazonS3</code> is NOT present in the context.
@@ -38,7 +42,10 @@ import java.util.Map;
 @Component
 public class InboxSftpEventListener implements SftpEventListener {
 
-    public static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList(MessageDigestAlgorithms.MD5, MessageDigestAlgorithms.SHA_256);
+    public static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList(
+            MD5,
+            SHA_256.toLowerCase().replace("-", "")
+    );
 
     protected String exchange;
     protected String routingKeyChecksums;
@@ -93,6 +100,11 @@ public class InboxSftpEventListener implements SftpEventListener {
     @Override
     public void removed(ServerSession session, Path path, Throwable thrown) {
         log.info("User {} removed entry: {}", session.getUsername(), path);
+        try {
+            processFile(REMOVE, session.getUsername(), null, path);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -132,9 +144,8 @@ public class InboxSftpEventListener implements SftpEventListener {
             log.error(thrown.getMessage(), thrown);
         } else {
             log.info("User {} moved entry {} to {}", session.getUsername(), srcPath, dstPath);
-            // TODO: Think about what to do with the source location (or a case of file removal).
             try {
-                processCreatedFile(session.getUsername(), dstPath);
+                processFile(RENAME, session.getUsername(), srcPath, dstPath);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -167,35 +178,62 @@ public class InboxSftpEventListener implements SftpEventListener {
      */
     protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException, InterruptedException {
         Path path = localHandle.getFile();
-        processCreatedFile(session.getUsername(), path);
+        processFile(UPLOAD, session.getUsername(), null, path);
         session.getProperties().remove(path.toString());
     }
 
     /**
-     * Sends message to CEGA.
+     * Handles file event.
      *
-     * @param username Username.
-     * @param path     Path to affected file.
+     * @param operation The type of file event.
+     * @param username  Username.
+     * @param srcPath   Old path of the affected file.
+     * @param dstPath   New path of the affected file.
      * @throws IOException In case of an IO error.
      */
-    protected void processCreatedFile(String username, Path path) throws IOException {
-        File file = path.toFile();
-        if (file.exists() && file.isFile()) {
-            log.info("File {} created by user {}", path.toString(), username);
-            String extension = FilenameUtils.getExtension(file.getName());
+    protected void processFile(Operation operation, String username, Path srcPath, Path dstPath) throws IOException {
+        File file = dstPath.toFile();
+        String extension = FilenameUtils.getExtension(file.getName());
+        log.info("File {} affected by user {}", dstPath.toString(), username);
+        if (REMOVE == operation) {
             FileDescriptor fileDescriptor = new FileDescriptor();
             fileDescriptor.setUser(username);
-            fileDescriptor.setFilePath(getFilePath(path));
-            if (SUPPORTED_ALGORITHMS.contains(extension.toLowerCase()) || SUPPORTED_ALGORITHMS.contains(extension.toUpperCase())) {
-                String digest = FileUtils.readFileToString(file, Charset.defaultCharset());
-                fileDescriptor.setContent(digest);
-                rabbitTemplate.convertAndSend(exchange, routingKeyChecksums, gson.toJson(fileDescriptor));
-            } else {
-                fileDescriptor.setFileSize(FileUtils.sizeOf(file));
-                String digest = DigestUtils.md5Hex(FileUtils.openInputStream(file));
-                fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity(digest, MessageDigestAlgorithms.MD5));
-                rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
+            fileDescriptor.setFilePath(getFilePath(dstPath));
+            fileDescriptor.setOperation(operation.name().toLowerCase());
+            publishMessage(file, extension, fileDescriptor);
+        } else if (file.exists() && file.isFile()) {
+            FileDescriptor fileDescriptor = new FileDescriptor();
+            fileDescriptor.setUser(username);
+            fileDescriptor.setFilePath(getFilePath(dstPath));
+            fileDescriptor.setFileLastModified(file.lastModified() / 1000);
+            fileDescriptor.setFileSize(FileUtils.sizeOf(file));
+            fileDescriptor.setOperation(operation.name().toLowerCase());
+            if (RENAME == operation) {
+                fileDescriptor.setOldPath(getFilePath(srcPath));
             }
+            String digest = DigestUtils.sha256Hex(FileUtils.openInputStream(file));
+            fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
+                    new EncryptedIntegrity(SHA_256.toLowerCase().replace("-", ""), digest)
+            });
+            publishMessage(file, extension, fileDescriptor);
+        }
+    }
+
+    /**
+     * Publishes message to MQ.
+     *
+     * @param file           Affected file.
+     * @param extension      Affected file's extension.
+     * @param fileDescriptor File descriptor to serialize and send.
+     * @throws IOException In case of an IO error.
+     */
+    protected void publishMessage(File file, String extension, FileDescriptor fileDescriptor) throws IOException {
+        if (SUPPORTED_ALGORITHMS.contains(extension.toLowerCase()) || SUPPORTED_ALGORITHMS.contains(extension.toUpperCase())) {
+            String content = FileUtils.readFileToString(file, Charset.defaultCharset());
+            fileDescriptor.setContent(content);
+            rabbitTemplate.convertAndSend(exchange, routingKeyChecksums, gson.toJson(fileDescriptor));
+        } else {
+            rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
         }
     }
 

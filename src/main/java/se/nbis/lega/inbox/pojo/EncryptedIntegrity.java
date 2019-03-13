@@ -11,10 +11,10 @@ import lombok.ToString;
 @Data
 public class EncryptedIntegrity {
 
-    @SerializedName("checksum")
-    private final String checksum;
-
-    @SerializedName("algorithm")
+    @SerializedName("type")
     private final String algorithm;
+
+    @SerializedName("value")
+    private final String checksum;
 
 }
