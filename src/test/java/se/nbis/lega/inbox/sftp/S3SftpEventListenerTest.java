@@ -74,10 +74,10 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
-        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
         assertNotNull(encryptedIntegrity);
-        assertEquals(MessageDigestAlgorithms.MD5, encryptedIntegrity.getAlgorithm());
-        assertEquals(DigestUtils.md5Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
+        assertEquals(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
+        assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertEquals(FileUtils.readFileToString(hash, Charset.defaultCharset()), fileDescriptor.getContent());
         assertEquals(0, fileDescriptor.getFileSize());
-        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
         assertNull(encryptedIntegrity);
     }
 
@@ -112,10 +112,10 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
-        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
         assertNotNull(encryptedIntegrity);
-        assertEquals(MessageDigestAlgorithms.MD5, encryptedIntegrity.getAlgorithm());
-        assertEquals(DigestUtils.md5Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
+        assertEquals(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
+        assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
     }
 
     @Test

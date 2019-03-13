@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
-import se.nbis.lega.inbox.pojo.EventType;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
+import se.nbis.lega.inbox.pojo.Operation;
 
 import java.io.File;
 import java.io.IOException;
@@ -95,7 +95,7 @@ public class InboxSftpEventListener implements SftpEventListener {
     public void removed(ServerSession session, Path path, Throwable thrown) {
         log.info("User {} removed entry: {}", session.getUsername(), path);
         try {
-            processCreatedFile(EventType.REMOVED, session.getUsername(), path);
+            processCreatedFile(Operation.REMOVE, session.getUsername(), path);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -140,7 +140,7 @@ public class InboxSftpEventListener implements SftpEventListener {
             log.info("User {} moved entry {} to {}", session.getUsername(), srcPath, dstPath);
             // TODO: Think about what to do with the source location (or a case of file removal).
             try {
-                processCreatedFile(EventType.MOVED, session.getUsername(), dstPath);
+                processCreatedFile(Operation.RENAME, session.getUsername(), dstPath);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -173,19 +173,19 @@ public class InboxSftpEventListener implements SftpEventListener {
      */
     protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException, InterruptedException {
         Path path = localHandle.getFile();
-        processCreatedFile(EventType.CREATED, session.getUsername(), path);
+        processCreatedFile(Operation.UPLOAD, session.getUsername(), path);
         session.getProperties().remove(path.toString());
     }
 
     /**
      * Handles file event.
      *
-     * @param eventType The type of file event.
+     * @param operation The type of file event.
      * @param username  Username.
      * @param path      Path to affected file.
      * @throws IOException In case of an IO error.
      */
-    protected void processCreatedFile(EventType eventType, String username, Path path) throws IOException {
+    protected void processCreatedFile(Operation operation, String username, Path path) throws IOException {
         File file = path.toFile();
         if (file.exists() && file.isFile()) {
             log.info("File {} created by user {}", path.toString(), username);
@@ -199,8 +199,10 @@ public class InboxSftpEventListener implements SftpEventListener {
                 rabbitTemplate.convertAndSend(exchange, routingKeyChecksums, gson.toJson(fileDescriptor));
             } else {
                 fileDescriptor.setFileSize(FileUtils.sizeOf(file));
-                String digest = DigestUtils.md5Hex(FileUtils.openInputStream(file));
-                fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity(digest, MessageDigestAlgorithms.MD5));
+                String digest = DigestUtils.sha256Hex(FileUtils.openInputStream(file));
+                fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
+                        new EncryptedIntegrity(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), digest)
+                });
                 rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
             }
         }

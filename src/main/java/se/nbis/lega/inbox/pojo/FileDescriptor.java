@@ -17,13 +17,22 @@ public class FileDescriptor {
     @SerializedName("filepath")
     private String filePath;
 
-    @SerializedName("content")
-    private String content;
+    @SerializedName("operation")
+    private String operation;
 
     @SerializedName("filesize")
     private long fileSize;
 
-    @SerializedName("encrypted_integrity")
-    private EncryptedIntegrity encryptedIntegrity;
+    @SerializedName("oldpath")
+    private String oldPath;
+
+    @SerializedName("file_last_modified")
+    private long fileLastModified;
+
+    @SerializedName("content")
+    private String content;
+
+    @SerializedName("encrypted_checksums")
+    private EncryptedIntegrity[] encryptedIntegrity;
 
 }
