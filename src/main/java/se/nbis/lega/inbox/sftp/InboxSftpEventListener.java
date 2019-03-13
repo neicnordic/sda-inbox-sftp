@@ -4,7 +4,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.sshd.server.session.ServerSession;
@@ -30,6 +29,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static se.nbis.lega.inbox.pojo.Operation.*;
 
 /**
@@ -42,8 +43,8 @@ import static se.nbis.lega.inbox.pojo.Operation.*;
 public class InboxSftpEventListener implements SftpEventListener {
 
     public static final List<String> SUPPORTED_ALGORITHMS = Arrays.asList(
-            MessageDigestAlgorithms.MD5,
-            MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", "")
+            MD5,
+            SHA_256.toLowerCase().replace("-", "")
     );
 
     protected String exchange;
@@ -212,7 +213,7 @@ public class InboxSftpEventListener implements SftpEventListener {
             }
             String digest = DigestUtils.sha256Hex(FileUtils.openInputStream(file));
             fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
-                    new EncryptedIntegrity(MessageDigestAlgorithms.SHA_256.toLowerCase().replace("-", ""), digest)
+                    new EncryptedIntegrity(SHA_256.toLowerCase().replace("-", ""), digest)
             });
             publishMessage(file, extension, fileDescriptor);
         }
