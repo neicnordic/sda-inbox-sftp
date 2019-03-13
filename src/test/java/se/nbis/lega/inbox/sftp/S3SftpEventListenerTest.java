@@ -127,11 +127,20 @@ public class S3SftpEventListenerTest extends InboxTest {
     public void removeFile() throws IOException {
         sftpClient.put(file.getAbsolutePath(), file.getName());
 
-        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
+        fileBlockingQueue.poll();
         sftpClient.rm(file.getName());
 
+        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
+        assertEquals(username, fileDescriptor.getUser());
+        String expectedPath = file.getName();
         assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
+        assertEquals(expectedPath, fileDescriptor.getFilePath());
+        assertNull(fileDescriptor.getContent());
+        assertEquals(0, fileDescriptor.getFileSize());
+        assertEquals(Operation.REMOVE.name().toLowerCase(), fileDescriptor.getOperation());
+        Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        assertNull(encryptedIntegrity);
     }
 
     @Value("${inbox.port}")
