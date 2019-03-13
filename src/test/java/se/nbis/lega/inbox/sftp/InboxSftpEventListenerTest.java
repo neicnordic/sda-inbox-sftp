@@ -97,7 +97,7 @@ public class InboxSftpEventListenerTest extends InboxTest {
     }
 
     @Test
-    public void moveFile() throws IOException {
+    public void renameFile() throws IOException {
         sftpClient.put(file.getAbsolutePath(), file.getName());
 
         fileBlockingQueue.poll();
