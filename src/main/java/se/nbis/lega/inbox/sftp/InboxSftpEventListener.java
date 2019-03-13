@@ -30,6 +30,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static se.nbis.lega.inbox.pojo.Operation.*;
+
 /**
  * <code>SftpEventListener</code> implementation that publishes message to MQ upon file uploading completion.
  * Optional bean: initialized only if <code>AmazonS3</code> is NOT present in the context.
@@ -98,7 +100,7 @@ public class InboxSftpEventListener implements SftpEventListener {
     public void removed(ServerSession session, Path path, Throwable thrown) {
         log.info("User {} removed entry: {}", session.getUsername(), path);
         try {
-            processFile(Operation.REMOVE, session.getUsername(), null, path);
+            processFile(REMOVE, session.getUsername(), null, path);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -142,7 +144,7 @@ public class InboxSftpEventListener implements SftpEventListener {
         } else {
             log.info("User {} moved entry {} to {}", session.getUsername(), srcPath, dstPath);
             try {
-                processFile(Operation.RENAME, session.getUsername(), srcPath, dstPath);
+                processFile(RENAME, session.getUsername(), srcPath, dstPath);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -175,7 +177,7 @@ public class InboxSftpEventListener implements SftpEventListener {
      */
     protected void closed(ServerSession session, String remoteHandle, Handle localHandle) throws IOException, InterruptedException {
         Path path = localHandle.getFile();
-        processFile(Operation.UPLOAD, session.getUsername(), null, path);
+        processFile(UPLOAD, session.getUsername(), null, path);
         session.getProperties().remove(path.toString());
     }
 
@@ -192,7 +194,7 @@ public class InboxSftpEventListener implements SftpEventListener {
         File file = dstPath.toFile();
         String extension = FilenameUtils.getExtension(file.getName());
         log.info("File {} affected by user {}", dstPath.toString(), username);
-        if (Operation.REMOVE == operation) {
+        if (REMOVE == operation) {
             FileDescriptor fileDescriptor = new FileDescriptor();
             fileDescriptor.setUser(username);
             fileDescriptor.setFilePath(getFilePath(dstPath));
@@ -205,7 +207,7 @@ public class InboxSftpEventListener implements SftpEventListener {
             fileDescriptor.setFileLastModified(file.lastModified() / 1000);
             fileDescriptor.setFileSize(FileUtils.sizeOf(file));
             fileDescriptor.setOperation(operation.name().toLowerCase());
-            if (Operation.RENAME == operation) {
+            if (RENAME == operation) {
                 fileDescriptor.setOldPath(getFilePath(srcPath));
             }
             String digest = DigestUtils.sha256Hex(FileUtils.openInputStream(file));
