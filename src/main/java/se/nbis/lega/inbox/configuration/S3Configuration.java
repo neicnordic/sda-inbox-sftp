@@ -8,6 +8,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * S3 beans definitions.
  */
+@Slf4j
 @Configuration
 public class S3Configuration {
 
@@ -33,12 +35,14 @@ public class S3Configuration {
         AWSStaticCredentialsProvider awsStaticCredentialsProvider = new AWSStaticCredentialsProvider(credentials);
         ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.setProtocol(useSSL ? Protocol.HTTPS : Protocol.HTTP);
-        return AmazonS3ClientBuilder.standard()
+        AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
                 .withEndpointConfiguration(endpointConfiguration)
                 .withCredentials(awsStaticCredentialsProvider)
                 .withClientConfiguration(clientConfiguration)
                 .withPathStyleAccessEnabled(true)
                 .build();
+        log.info("S3 connection established to {} endpoint with region {}", s3Endpoint, s3Region);
+        return amazonS3;
     }
 
     @Value("${inbox.s3.region}")

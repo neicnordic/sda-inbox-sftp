@@ -228,13 +228,17 @@ public class InboxSftpEventListener implements SftpEventListener {
      * @throws IOException In case of an IO error.
      */
     protected void publishMessage(File file, String extension, FileDescriptor fileDescriptor) throws IOException {
+        String routingKey;
         if (SUPPORTED_ALGORITHMS.contains(extension.toLowerCase()) || SUPPORTED_ALGORITHMS.contains(extension.toUpperCase())) {
             String content = FileUtils.readFileToString(file, Charset.defaultCharset());
             fileDescriptor.setContent(content);
-            rabbitTemplate.convertAndSend(exchange, routingKeyChecksums, gson.toJson(fileDescriptor));
+            routingKey = routingKeyChecksums;
         } else {
-            rabbitTemplate.convertAndSend(exchange, routingKeyFiles, gson.toJson(fileDescriptor));
+            routingKey = routingKeyFiles;
         }
+        String json = gson.toJson(fileDescriptor);
+        rabbitTemplate.convertAndSend(exchange, routingKey, json);
+        log.info("Message published to {} exchange with routing key {}: {}", exchange, routingKey, json);
     }
 
     protected String getFilePath(Path path) {
