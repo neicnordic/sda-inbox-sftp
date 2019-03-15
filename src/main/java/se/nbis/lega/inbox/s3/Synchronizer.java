@@ -46,6 +46,7 @@ public class Synchronizer implements ApplicationListener<ApplicationReadyEvent> 
     }
 
     private void synchronizeBucket(String root, Collection<File> localFiles, String bucket) {
+        log.info("Synchronizing bucket {}", bucket);
         s3Service.prepareBucket(bucket);
         Collection<String> remoteKeys = s3Service.listKeys(bucket);
         for (File localFile : localFiles) {
