@@ -46,6 +46,7 @@ public class SFTPConfiguration {
         sshd.setPort(inboxPort);
         sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
         sshd.setUserAuthFactories(Arrays.asList(new UserAuthPasswordFactory(), new UserAuthPublicKeyFactory()));
+        log.info("Initializing SftpSubsystemFactory with {}", sftpEventListener.getClass());
         SftpSubsystemFactory sftpSubsystemFactory = new SftpSubsystemFactory();
         sftpSubsystemFactory.addSftpEventListener(sftpEventListener);
         sshd.setSubsystemFactories(Collections.singletonList(sftpSubsystemFactory));
