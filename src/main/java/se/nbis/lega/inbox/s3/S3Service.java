@@ -53,8 +53,10 @@ public class S3Service {
      * @param sync   <code>true</code> for synchronous upload, <code>false</code> otherwise.
      */
     public void upload(String bucket, String key, Path path, boolean sync) throws InterruptedException {
+        log.info("Initializing S3 upload, sync = {}", sync);
         Upload upload = TransferManagerBuilder.standard().withS3Client(amazonS3).build().upload(bucket, key == null ? getKey(path) : key, path.toFile());
         if (sync) {
+            log.info("Waiting for upload to finish: {}", upload.getDescription());
             upload.waitForUploadResult();
         }
         log.info(upload.getDescription());
