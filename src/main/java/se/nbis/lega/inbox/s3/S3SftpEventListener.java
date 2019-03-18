@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.sftp.InboxSftpEventListener;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.CopyOption;
 import java.nio.file.Path;
@@ -24,6 +25,12 @@ import java.util.Collection;
 public class S3SftpEventListener extends InboxSftpEventListener {
 
     private S3Service s3Service;
+
+    @PostConstruct
+    @Override
+    public void init() {
+        log.info("Initializing {}", this.getClass());
+    }
 
     /**
      * {@inheritDoc}
