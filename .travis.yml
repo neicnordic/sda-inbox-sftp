@@ -1,13 +1,6 @@
 language: java
 
-services: docker
-
-after_success:
-  - mvn jacoco:report coveralls:report
-  - if [[ "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then
-      docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
-      docker push nbisweden/ega-mina-inbox:latest;
-    fi
+after_success: mvn jacoco:report coveralls:report
 
 notifications:
   email: false
