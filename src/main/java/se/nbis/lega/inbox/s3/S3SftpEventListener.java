@@ -1,11 +1,10 @@
 package se.nbis.lega.inbox.s3;
 
-import com.amazonaws.services.s3.AmazonS3;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.subsystem.sftp.Handle;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.sftp.InboxSftpEventListener;
 
@@ -17,10 +16,10 @@ import java.util.Collection;
 
 /**
  * <code>SftpEventListener</code> implementation with support for S3 operations.
- * Optional bean: initialized only if <code>AmazonS3</code> is present in the context.
+ * Optional bean: initialized only if S3 keys are present in the context.
  */
 @Slf4j
-@ConditionalOnBean(AmazonS3.class)
+@ConditionalOnExpression("!'${inbox.s3.access-key}'.isEmpty() && !'${inbox.s3.secret-key}'.isEmpty()")
 @Component
 public class S3SftpEventListener extends InboxSftpEventListener {
 

@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 
 /**
  * Service for communicating with S3 backend.
- * Optional bean: initialized only if <code>AmazonS3</code> is present in the context.
+ * Optional bean: initialized only if S3 keys are present in the context.
  */
 @Slf4j
-@ConditionalOnBean(AmazonS3.class)
+@ConditionalOnExpression("!'${inbox.s3.access-key}'.isEmpty() && !'${inbox.s3.secret-key}'.isEmpty()")
 @Service
 public class S3Service {
 
