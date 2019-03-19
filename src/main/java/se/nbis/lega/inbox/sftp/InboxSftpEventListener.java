@@ -1,6 +1,5 @@
 package se.nbis.lega.inbox.sftp;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -13,7 +12,7 @@ import org.apache.sshd.server.subsystem.sftp.SftpEventListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
@@ -36,10 +35,10 @@ import static se.nbis.lega.inbox.pojo.Operation.*;
 
 /**
  * <code>SftpEventListener</code> implementation that publishes message to MQ upon file uploading completion.
- * Optional bean: initialized only if <code>AmazonS3</code> is NOT present in the context.
+ * Optional bean: initialized only if S3 keys are NOT present in the context.
  */
 @Slf4j
-@ConditionalOnMissingBean(AmazonS3.class)
+@ConditionalOnExpression("'${inbox.s3.access-key}'.isEmpty() || '${inbox.s3.secret-key}'.isEmpty()")
 @Component
 public class InboxSftpEventListener implements SftpEventListener {
 
