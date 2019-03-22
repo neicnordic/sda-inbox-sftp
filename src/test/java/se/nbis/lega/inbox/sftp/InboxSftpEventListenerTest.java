@@ -123,6 +123,31 @@ public class InboxSftpEventListenerTest extends InboxTest {
     }
 
     @Test
+    public void renameFolder() throws IOException {
+        sftpClient.mkdir("test");
+        sftpClient.mkdir("test/test1");
+
+        sftpClient.put(file.getAbsolutePath(), "test/test1/" + file.getName());
+        fileBlockingQueue.poll();
+
+        sftpClient.rename("test/test1", "test/test2");
+
+        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
+        assertNotNull(fileDescriptor);
+        assertEquals(username, fileDescriptor.getUser());
+        String expectedOldPath = inboxFolder + "/" + username + "/test/test1";
+        String expectedPath = inboxFolder + "/" + username + "/test/test2";
+        assertTrue(new File(expectedPath).exists());
+        assertEquals(expectedPath, fileDescriptor.getFilePath());
+        assertNull(fileDescriptor.getContent());
+        assertEquals(0, fileDescriptor.getFileSize());
+        assertEquals(RENAME.name().toLowerCase(), fileDescriptor.getOperation());
+        assertEquals(expectedOldPath, fileDescriptor.getOldPath());
+        Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        assertNull(encryptedIntegrity);
+    }
+
+    @Test
     public void removeFile() throws IOException {
         sftpClient.put(file.getAbsolutePath(), file.getName());
 

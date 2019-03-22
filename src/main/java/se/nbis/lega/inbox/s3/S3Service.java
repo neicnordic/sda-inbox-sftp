@@ -82,7 +82,7 @@ public class S3Service {
         ObjectListing objectListing = amazonS3.listObjects(bucket, getKey(srcPath));
         for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
             String srcKey = s3ObjectSummary.getKey();
-            String dstKey = getKey(dstPath) + srcKey.replace(getKey(srcPath), "");
+            String dstKey = getKey(dstPath) + srcKey.replace(getKey(srcPath) + "/", "/");
             amazonS3.copyObject(bucket, srcKey, bucket, dstKey);
             amazonS3.deleteObject(bucket, srcKey);
         }

@@ -206,20 +206,22 @@ public class InboxSftpEventListener implements SftpEventListener {
             fileDescriptor.setFilePath(getFilePath(dstPath));
             fileDescriptor.setOperation(operation.name().toLowerCase());
             publishMessage(file, extension, fileDescriptor);
-        } else if (file.exists() && file.isFile()) {
+        } else if (file.exists()) {
             FileDescriptor fileDescriptor = new FileDescriptor();
             fileDescriptor.setUser(username);
             fileDescriptor.setFilePath(getFilePath(dstPath));
             fileDescriptor.setFileLastModified(file.lastModified() / 1000);
-            fileDescriptor.setFileSize(FileUtils.sizeOf(file));
             fileDescriptor.setOperation(operation.name().toLowerCase());
             if (RENAME == operation) {
                 fileDescriptor.setOldPath(getFilePath(srcPath));
             }
-            String digest = DigestUtils.sha256Hex(FileUtils.openInputStream(file));
-            fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
-                    new EncryptedIntegrity(SHA_256.toLowerCase().replace("-", ""), digest)
-            });
+            if (file.isFile()) {
+                fileDescriptor.setFileSize(FileUtils.sizeOf(file));
+                String digest = DigestUtils.sha256Hex(FileUtils.openInputStream(file));
+                fileDescriptor.setEncryptedIntegrity(new EncryptedIntegrity[]{
+                        new EncryptedIntegrity(SHA_256.toLowerCase().replace("-", ""), digest)
+                });
+            }
             publishMessage(file, extension, fileDescriptor);
         }
     }

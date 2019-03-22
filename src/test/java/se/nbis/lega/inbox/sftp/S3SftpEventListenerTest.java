@@ -125,6 +125,52 @@ public class S3SftpEventListenerTest extends InboxTest {
     }
 
     @Test
+    public void renameTopLevelFolder() throws IOException {
+        sftpClient.mkdir("test");
+        sftpClient.mkdir("test/test1");
+
+        sftpClient.put(file.getAbsolutePath(), "test/test1/" + file.getName());
+        fileBlockingQueue.poll();
+
+        sftpClient.rename("test", "test2");
+
+        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
+        assertNotNull(fileDescriptor);
+        assertEquals(username, fileDescriptor.getUser());
+        assertEquals("test", fileDescriptor.getOldPath());
+        assertEquals("test2", fileDescriptor.getFilePath());
+        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), "test/test1/" + file.getName()));
+        assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), "test2/test1/" + file.getName()));
+        assertNull(fileDescriptor.getContent());
+        assertEquals(0, fileDescriptor.getFileSize());
+        Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        assertNull(encryptedIntegrity);
+    }
+
+    @Test
+    public void renameSecondLevelFolder() throws IOException {
+        sftpClient.mkdir("test");
+        sftpClient.mkdir("test/test1");
+
+        sftpClient.put(file.getAbsolutePath(), "test/test1/" + file.getName());
+        fileBlockingQueue.poll();
+
+        sftpClient.rename("test/test1", "test/test2");
+
+        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
+        assertNotNull(fileDescriptor);
+        assertEquals(username, fileDescriptor.getUser());
+        assertEquals("test/test1", fileDescriptor.getOldPath());
+        assertEquals("test/test2", fileDescriptor.getFilePath());
+        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getOldPath() + "/" + file.getName()));
+        assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath() + "/" + file.getName()));
+        assertNull(fileDescriptor.getContent());
+        assertEquals(0, fileDescriptor.getFileSize());
+        Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        assertNull(encryptedIntegrity);
+    }
+
+    @Test
     public void removeFile() throws IOException {
         sftpClient.put(file.getAbsolutePath(), file.getName());
 
