@@ -1,6 +1,7 @@
 package se.nbis.lega.inbox.sftp;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -18,6 +19,8 @@ import se.nbis.lega.inbox.pojo.FileDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
@@ -120,6 +123,31 @@ public class InboxSftpEventListenerTest extends InboxTest {
         assertNotNull(encryptedIntegrity);
         assertEquals(SHA_256.toLowerCase().replace("-", ""), encryptedIntegrity.getAlgorithm());
         assertEquals(DigestUtils.sha256Hex(FileUtils.openInputStream(file)), encryptedIntegrity.getChecksum());
+    }
+
+    @Test
+    public void renameFolder() throws IOException {
+        sftpClient.mkdir("test");
+        sftpClient.mkdir("test/test1");
+
+        sftpClient.put(file.getAbsolutePath(), "test/test1/" + file.getName());
+        fileBlockingQueue.poll();
+
+        sftpClient.rename("test/test1", "test/test2");
+
+        FileDescriptor fileDescriptor = fileBlockingQueue.poll();
+        assertNotNull(fileDescriptor);
+        assertEquals(username, fileDescriptor.getUser());
+        String expectedOldPath = inboxFolder + "/" + username + "/test/test1";
+        String expectedPath = inboxFolder + "/" + username + "/test/test2";
+        assertTrue(new File(expectedPath).exists());
+        assertEquals(expectedPath, fileDescriptor.getFilePath());
+        assertNull(fileDescriptor.getContent());
+        assertEquals(0, fileDescriptor.getFileSize());
+        assertEquals(RENAME.name().toLowerCase(), fileDescriptor.getOperation());
+        assertEquals(expectedOldPath, fileDescriptor.getOldPath());
+        Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
+        assertNull(encryptedIntegrity);
     }
 
     @Test
