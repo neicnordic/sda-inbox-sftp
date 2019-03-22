@@ -1,6 +1,9 @@
 package se.nbis.lega.inbox.sftp;
 
+import org.hamcrest.CoreMatchers;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,18 +16,19 @@ import se.nbis.lega.inbox.pojo.PasswordHashingAlgorithm;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.assertEquals;
-
 @RunWith(SpringRunner.class)
 public class CredentialsProviderTest extends InboxTest {
+
+    @Rule
+    public ErrorCollector collector = new ErrorCollector();
 
     private CredentialsProvider credentialsProvider;
 
     @Test
     public void getCredentialsSuccess() throws IOException, URISyntaxException {
         Credentials credentials = credentialsProvider.getCredentials(username);
-        assertEquals(passwordHash, credentials.getPasswordHash());
-        assertEquals(publicKey, credentials.getPublicKey());
+        collector.checkThat(passwordHash, CoreMatchers.is(credentials.getPasswordHash()));
+        collector.checkThat(publicKey, CoreMatchers.is(credentials.getPublicKey()));
     }
 
     @Test(expected = RestClientException.class)

@@ -1,7 +1,6 @@
 package se.nbis.lega.inbox.sftp;
 
 import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -19,8 +18,6 @@ import se.nbis.lega.inbox.pojo.FileDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
