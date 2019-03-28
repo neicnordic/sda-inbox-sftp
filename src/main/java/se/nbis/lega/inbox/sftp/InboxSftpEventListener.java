@@ -1,6 +1,7 @@
 package se.nbis.lega.inbox.sftp;
 
 import com.google.gson.Gson;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -244,7 +245,11 @@ public class InboxSftpEventListener implements SftpEventListener {
             routingKey = routingKeyFiles;
         }
         String json = gson.toJson(fileDescriptor);
-        rabbitTemplate.convertAndSend(exchange, routingKey, json);
+        rabbitTemplate.convertAndSend(exchange, routingKey, json, m -> {
+            m.getMessageProperties().setContentType("application/json");
+            m.getMessageProperties().setCorrelationId(UUID.randomUUID().toString());
+            return m;
+        });
         log.info("Message published to {} exchange with routing key {}: {}", exchange, routingKey, json);
     }
 
