@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.http.entity.ContentType;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.subsystem.sftp.FileHandle;
 import org.apache.sshd.server.subsystem.sftp.Handle;
@@ -246,7 +247,7 @@ public class InboxSftpEventListener implements SftpEventListener {
         }
         String json = gson.toJson(fileDescriptor);
         rabbitTemplate.convertAndSend(exchange, routingKey, json, m -> {
-            m.getMessageProperties().setContentType("application/json");
+            m.getMessageProperties().setContentType(ContentType.APPLICATION_JSON.getMimeType());
             m.getMessageProperties().setCorrelationId(UUID.randomUUID().toString());
             return m;
         });

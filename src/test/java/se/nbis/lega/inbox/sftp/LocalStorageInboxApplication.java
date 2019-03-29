@@ -1,7 +1,9 @@
 package se.nbis.lega.inbox.sftp;
 
 import com.google.gson.Gson;
+import org.mockito.ArgumentMatchers;
 import org.mockito.stubbing.Answer;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,8 +16,7 @@ import se.nbis.lega.inbox.pojo.FileDescriptor;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
@@ -39,7 +40,7 @@ public class LocalStorageInboxApplication {
             BlockingQueue<FileDescriptor> queue = routingKey.equals(routingKeyFiles) ? fileBlockingQueue() : hashBlockingQueue();
             queue.put(gson.fromJson(invocationOnMock.getArgument(2).toString(), FileDescriptor.class));
             return null;
-        }).when(mock).convertAndSend(eq(exchange), anyString(), anyString());
+        }).when(mock).convertAndSend(eq(exchange), anyString(), anyString(), any(MessagePostProcessor.class));
         return mock;
     }
 
