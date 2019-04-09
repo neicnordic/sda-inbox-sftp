@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +31,7 @@ import java.util.Collections;
 public class SFTPConfiguration {
 
     private int inboxPort;
+    private String inboxKeypair;
 
     private SftpEventListener sftpEventListener;
     private PasswordAuthenticator passwordAuthenticator;
@@ -44,7 +47,7 @@ public class SFTPConfiguration {
 
         SshServer sshd = SshServer.setUpDefaultServer();
         sshd.setPort(inboxPort);
-        sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
+        sshd.setKeyPairProvider(StringUtils.isEmpty(inboxKeypair) ? new SimpleGeneratorHostKeyProvider() : new SimpleGeneratorHostKeyProvider(new File(inboxKeypair)));
         sshd.setUserAuthFactories(Arrays.asList(new UserAuthPasswordFactory(), new UserAuthPublicKeyFactory()));
         log.info("Initializing SftpSubsystemFactory with {}", sftpEventListener.getClass());
         SftpSubsystemFactory sftpSubsystemFactory = new SftpSubsystemFactory();
@@ -60,6 +63,11 @@ public class SFTPConfiguration {
     @Value("${inbox.port}")
     public void setInboxPort(int inboxPort) {
         this.inboxPort = inboxPort;
+    }
+
+    @Value("${inbox.keypair}")
+    public void setInboxKeypair(String inboxKeypair) {
+        this.inboxKeypair = inboxKeypair;
     }
 
     @Autowired

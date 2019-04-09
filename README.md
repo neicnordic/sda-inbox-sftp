@@ -53,6 +53,7 @@ Environment variables used:
 | BROKER_PORT           | 5672               | RabbitMQ broker port                                       |
 | INBOX_PORT            | 2222               | Inbox port                                                 |
 | INBOX_LOCATION        | /ega/inbox/        | Path to POSIX Inbox backend                                |
+| INBOX_KEYPAIR         |                    | Path to RSA keypair file                     |
 | CACHE_TTL             | 3600.0             | CEGA credentials time-to-live                              |
 | CEGA_ENDPOINT         |                    | CEGA REST endpoint                                         |
 | CEGA_ENDPOINT_CREDS   |                    | CEGA REST credentials                                      |
