@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.SimpleByteBufferAllocator;
 import org.apache.sshd.common.file.FileSystemFactory;
+import org.apache.sshd.common.util.security.bouncycastle.BouncyCastleGeneratorHostKeyProvider;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.auth.password.UserAuthPasswordFactory;
@@ -47,7 +48,7 @@ public class SFTPConfiguration {
 
         SshServer sshd = SshServer.setUpDefaultServer();
         sshd.setPort(inboxPort);
-        sshd.setKeyPairProvider(StringUtils.isEmpty(inboxKeypair) ? new SimpleGeneratorHostKeyProvider() : new SimpleGeneratorHostKeyProvider(new File(inboxKeypair)));
+        sshd.setKeyPairProvider(StringUtils.isEmpty(inboxKeypair) ? new SimpleGeneratorHostKeyProvider() : new BouncyCastleGeneratorHostKeyProvider(new File(inboxKeypair).toPath()));
         sshd.setUserAuthFactories(Arrays.asList(new UserAuthPasswordFactory(), new UserAuthPublicKeyFactory()));
         log.info("Initializing SftpSubsystemFactory with {}", sftpEventListener.getClass());
         SftpSubsystemFactory sftpSubsystemFactory = new SftpSubsystemFactory();
