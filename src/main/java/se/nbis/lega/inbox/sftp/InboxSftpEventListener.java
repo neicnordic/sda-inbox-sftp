@@ -1,7 +1,6 @@
 package se.nbis.lega.inbox.sftp;
 
 import com.google.gson.Gson;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -14,7 +13,6 @@ import org.apache.sshd.server.subsystem.sftp.SftpEventListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
@@ -26,10 +24,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.CopyOption;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
@@ -37,10 +32,8 @@ import static se.nbis.lega.inbox.pojo.Operation.*;
 
 /**
  * <code>SftpEventListener</code> implementation that publishes message to MQ upon file uploading completion.
- * Optional bean: initialized only if S3 keys are NOT present in the context.
  */
 @Slf4j
-@ConditionalOnExpression("'${inbox.s3.access-key}'.isEmpty() || '${inbox.s3.secret-key}'.isEmpty()")
 @Component
 public class InboxSftpEventListener implements SftpEventListener {
 

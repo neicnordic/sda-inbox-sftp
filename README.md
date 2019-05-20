@@ -31,15 +31,6 @@ The user's home directory is created when its credentials upon successful login.
 Moreover, for each user, we detect when the file upload is completed and compute its
 checksum. 
 
-## S3 integration
-
-Default storage back-end for the inbox is local file-system. But we also support S3 service as a back-end. It can be 
-enabled using S3-related env-vars (see configuration details below).
-
-If S3 is enabled, then files are still going to be stored locally, but after successful upload, they will going to be 
-uploaded to the specified S3 back-end. With this approach local file-system plays role of so called "staging area", 
-while S3 is the real final destination for the uploaded files.
-
 ## Configuration
 
 Environment variables used:
@@ -57,8 +48,3 @@ Environment variables used:
 | CACHE_TTL             | 3600.0             | CEGA credentials time-to-live                              |
 | CEGA_ENDPOINT         |                    | CEGA REST endpoint                                         |
 | CEGA_ENDPOINT_CREDS   |                    | CEGA REST credentials                                      |
-| S3_ENDPOINT           | inbox-backend:9000 | Inbox S3 backend URL                                       |
-| S3_REGION             | us-east-1          | Inbox S3 backend region (us-east-1 is default in Minio)    |
-| S3_ACCESS_KEY         |                    | Inbox S3 backend access key (S3 disabled if not specified) |
-| S3_SECRET_KEY         |                    | Inbox S3 backend secret key (S3 disabled if not specified) |
-| USE_SSL               | true               | true if S3 Inbox backend should be accessed by HTTPS       |
