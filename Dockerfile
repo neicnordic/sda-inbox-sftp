@@ -6,4 +6,6 @@ RUN mvn install -DskipTests
 FROM openjdk:8-jre-alpine
 COPY --from=builder /target/inbox-0.0.3-SNAPSHOT.jar .
 COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["java", "-jar", "inbox-0.0.3-SNAPSHOT.jar"]
