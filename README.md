@@ -62,3 +62,5 @@ Environment variables used:
 | S3_ACCESS_KEY         |                    | Inbox S3 backend access key (S3 disabled if not specified) |
 | S3_SECRET_KEY         |                    | Inbox S3 backend secret key (S3 disabled if not specified) |
 | USE_SSL               | true               | true if S3 Inbox backend should be accessed by HTTPS       |
+
+In addition, environment variables can be used to configure log level for different packages. Package loggers can be configured using corresponding package names, for example, to turn of logs of Spring, one can set environment variable `LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=OFF`, or to set Mina's own logs to debug: `LOGGING_LEVEL_SE_NBIS_LEGA_INBOX=DEBUG`, etc.
