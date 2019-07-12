@@ -51,9 +51,13 @@ Environment variables used:
 | BROKER_PASSWORD       | guest              | RabbitMQ broker password                                   |
 | BROKER_HOST           | mq                 | RabbitMQ broker host                                       |
 | BROKER_PORT           | 5672               | RabbitMQ broker port                                       |
+| BROKER_VHOST          | /                  | RabbitMQ broker vhost                                      |
 | INBOX_PORT            | 2222               | Inbox port                                                 |
 | INBOX_LOCATION        | /ega/inbox/        | Path to POSIX Inbox backend                                |
-| INBOX_KEYPAIR         |                    | Path to RSA keypair file                     |
+| INBOX_KEYPAIR         |                    | Path to RSA keypair file                                   |
+| KEYSTORE_TYPE         | JKS                | Keystore type to use, JKS or PKCS12                        |
+| KEYSTORE_PATH         | /etc/ega/inbox.jks | Path to Keystore file                                      |
+| KEYSTORE_PASSWORD     |                    | Password to access the Keystore                            |
 | CACHE_TTL             | 3600.0             | CEGA credentials time-to-live                              |
 | CEGA_ENDPOINT         |                    | CEGA REST endpoint                                         |
 | CEGA_ENDPOINT_CREDS   |                    | CEGA REST credentials                                      |
