@@ -17,6 +17,7 @@ after_success:
   - curl $TRYGGVE_KEY -o ~/.docker/key.pem
   - curl $CA_CERT_URL -o CA.cert
   - curl $CA_KEY_URL -o CA.key
+  - openssl req -nodes -newkey rsa:2048 -keyout CA.key -out CSR.csr -subj "/C=NO/ST=Oslo/L=Oslo/O=UiO/OU=IFI/CN=support@localega.com"
   - openssl x509 -req -in CSR.csr -CA CA.cert -CAkey CA.key -set_serial 101 -extensions client -days 365 -outform PEM -out client.cert
   - keytool -noprompt -importcert -file client.cert -keystore inbox.jks -storepass $KEYSTORE_PASSWORD
   - docker config create CA.cert CA.cert
