@@ -1,12 +1,25 @@
+dist: trusty
+
 language: java
+
+jdk:
+  - oraclejdk8
+
+cache:
+  directories:
+    - $HOME/.m2
+
+before_script: docker swarm join --token $SWARM_TOKEN $SWARM_IP
+
+script: mvn test -B
 
 after_success:
   - curl $CA_CERT_URL -o CA.cert
   - curl $CA_KEY_URL -o CA.key
   - openssl x509 -req -in CSR.csr -CA CA.cert -CAkey CA.key -set_serial 101 -extensions client -days 365 -outform PEM -out client.cert
   - keytool -noprompt -importcert -file client.cert -keystore inbox.jks -storepass $KEYSTORE_PASSWORD
-  - docker swarm join --token $SWARM_TOKEN $SWARM_IP
   - docker config create CA.cert CA.cert
   - docker config create inbox.jks inbox.jks
   - docker stack deploy INBOX
-  - docker swarm leave
+
+after_script: docker swarm leave
