@@ -12,9 +12,9 @@ cache:
 script: mvn test -B
 
 after_success:
-  - curl $TRYGGVE_CA -o ~/.docker/ca.pem
-  - curl $TRYGGVE_CERT -o ~/.docker/cert.pem
-  - curl $TRYGGVE_KEY -o ~/.docker/key.pem
+  - curl $TRYGGVE_CA --create-dirs -o ~/.docker/ca.pem
+  - curl $TRYGGVE_CERT --create-dirs -o ~/.docker/cert.pem
+  - curl $TRYGGVE_KEY --create-dirs -o ~/.docker/key.pem
   - curl $CA_CERT_URL -o CA.cert
   - curl $CA_KEY_URL -o CA.key
   - openssl req -nodes -newkey rsa:2048 -keyout CA.key -out CSR.csr -subj "/C=NO/ST=Oslo/L=Oslo/O=UiO/OU=IFI/CN=support@localega.com"
