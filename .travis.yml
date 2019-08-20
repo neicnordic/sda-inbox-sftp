@@ -25,4 +25,6 @@ after_success:
   - export S3_ACCESS_KEY=$TEMP_S3_ACCESS_KEY
   - export S3_ENDPOINT=$TEMP_S3_ENDPOINT
   - export S3_SECRET_KEY=$TEMP_S3_SECRET_KEY
+  - cat ~/.docker/ca.pem
+  - docker info
   - docker stack deploy INBOX
