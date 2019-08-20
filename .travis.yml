@@ -21,4 +21,7 @@ after_success:
   - keytool -noprompt -importcert -file client.cert -keystore inbox.jks -storepass $KEYSTORE_PASSWORD
   - docker config create CA.cert CA.cert
   - docker config create inbox.jks inbox.jks
+  - export S3_ACCESS_KEY=$TEMP_S3_ACCESS_KEY
+  - export S3_ENDPOINT=$TEMP_S3_ENDPOINT
+  - export S3_SECRET_KEY=$TEMP_S3_SECRET_KEY
   - docker stack deploy INBOX
