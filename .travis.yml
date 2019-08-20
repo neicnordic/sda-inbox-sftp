@@ -20,6 +20,9 @@ after_success:
   - openssl req -nodes -newkey rsa:2048 -keyout client.key -out CSR.csr -subj "/C=NO/ST=Oslo/L=Oslo/O=UiO/OU=IFI/CN=support@localega.com"
   - openssl x509 -req -in CSR.csr -CA CA.cert -CAkey CA.key -set_serial 101 -extensions client -days 365 -outform PEM -out client.cert
   - keytool -noprompt -importcert -file client.cert -keystore inbox.jks -storepass $KEYSTORE_PASSWORD
+  - docker stack rm INBOX
+  - docker config rm CA.cert
+  - docker config rm inbox.jks
   - docker config create CA.cert CA.cert
   - docker config create inbox.jks inbox.jks
   - export S3_ACCESS_KEY=$TEMP_S3_ACCESS_KEY
