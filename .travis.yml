@@ -11,4 +11,6 @@ cache:
 
 script: mvn test -B
 
-after_success: ./deploy.sh
+after_success:
+  - mvn clean
+  - ./deploy.sh

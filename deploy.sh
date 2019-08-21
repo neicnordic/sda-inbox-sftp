@@ -1,7 +1,6 @@
 #!/bin/sh
 
 if [[ "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then
-  mvn clean
   curl $TRYGGVE_CA --create-dirs -o ~/.docker/ca.pem
   curl $TRYGGVE_CERT --create-dirs -o ~/.docker/cert.pem
   curl $TRYGGVE_KEY --create-dirs -o ~/.docker/key.pem
