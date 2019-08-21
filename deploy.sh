@@ -12,6 +12,6 @@ if [[ "$TRAVIS_BRANCH" == "master" && "$TRAVIS_PULL_REQUEST" == "false" ]]; then
   export S3_ACCESS_KEY=$TEMP_S3_ACCESS_KEY
   export S3_ENDPOINT=$TEMP_S3_ENDPOINT
   export S3_SECRET_KEY=$TEMP_S3_SECRET_KEY
-  docker build -t nbisweden/ega-mina-inbox:latest .
+  docker build --no-cache -t nbisweden/ega-mina-inbox:uh .
   docker stack deploy INBOX --compose-file docker-stack.yml
 fi
