@@ -17,6 +17,7 @@ services:
       - S3_ACCESS_KEY
       - S3_SECRET_KEY
       - S3_ENDPOINT
+      - BROKER_HOST
       - BROKER_USERNAME
       - INBOX_JKS_PATH
       - KEYSTORE_PASSWORD
