@@ -76,7 +76,7 @@ public class InboxAuthenticatorTest extends InboxTest {
     public void authenticatePublicKeyRSA() throws IOException, URISyntaxException {
         mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH, KeyAlgorithm.RSA, HttpStatus.OK);
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        File privateKey = new File(classloader.getResource("rsa.sec").toURI());
+        File privateKey = new File(classloader.getResource(KeyAlgorithm.RSA.name().toLowerCase() + ".sec").toURI());
         ssh.authPublickey(username, privateKey.getPath());
         assertNotNull(ssh.newSFTPClient());
     }
@@ -85,7 +85,16 @@ public class InboxAuthenticatorTest extends InboxTest {
     public void authenticatePublicKeyDSS() throws IOException, URISyntaxException {
         mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH, KeyAlgorithm.DSS, HttpStatus.OK);
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        File privateKey = new File(classloader.getResource("dss.sec").toURI());
+        File privateKey = new File(classloader.getResource(KeyAlgorithm.DSS.name().toLowerCase() + ".sec").toURI());
+        ssh.authPublickey(username, privateKey.getPath());
+        assertNotNull(ssh.newSFTPClient());
+    }
+
+    @Test
+    public void authenticatePublicKeyED25519() throws IOException, URISyntaxException {
+        mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH, KeyAlgorithm.ED25519, HttpStatus.OK);
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        File privateKey = new File(classloader.getResource(KeyAlgorithm.ED25519.name().toLowerCase() + ".sec").toURI());
         ssh.authPublickey(username, privateKey.getPath());
         assertNotNull(ssh.newSFTPClient());
     }

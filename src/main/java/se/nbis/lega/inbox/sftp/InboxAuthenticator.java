@@ -6,9 +6,8 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.Crypt;
-import org.apache.commons.io.IOUtils;
 import org.apache.sshd.common.config.keys.KeyUtils;
-import org.apache.sshd.common.util.security.SecurityUtils;
+import org.apache.sshd.common.config.keys.PublicKeyEntryDecoder;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.auth.password.PasswordChangeRequiredException;
 import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
@@ -21,20 +20,10 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import se.nbis.lega.inbox.pojo.Credentials;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.spec.DSAPublicKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
 import java.util.concurrent.TimeUnit;
-
-import static org.apache.sshd.common.config.keys.KeyUtils.DSS_ALGORITHM;
-import static org.apache.sshd.common.config.keys.KeyUtils.RSA_ALGORITHM;
 
 /**
  * Component that authenticates users against the inbox.
@@ -95,39 +84,11 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         }
     }
 
-    // according to https://tools.ietf.org/html/rfc4253#section-6.6
     private PublicKey readKey(String key) throws IOException, GeneralSecurityException {
-        String keyFormat = key.split(" ")[0];
-        if (!"ssh-rsa".equals(keyFormat) && !"ssh-dss".equals(keyFormat)) {
-            throw new InvalidKeySpecException(String.format("Unsupported key format: %s", keyFormat));
-        }
+        String keyType = key.split(" ")[0];
         byte[] keyBytes = Base64.decodeBase64(key.split(" ")[1]);
-        DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(keyBytes));
-        byte[] header = readElement(inputStream);
-        String encodedKeyFormat = new String(header);
-        if (!keyFormat.equals(encodedKeyFormat)) {
-            throw new InvalidKeySpecException(String.format("Unsupported key format: %s", encodedKeyFormat));
-        }
-        if ("ssh-rsa".equals(encodedKeyFormat)) {
-            BigInteger publicExponent = new BigInteger(readElement(inputStream));
-            BigInteger modulus = new BigInteger(readElement(inputStream));
-            KeyFactory keyFactory = SecurityUtils.getKeyFactory(RSA_ALGORITHM);
-            return keyFactory.generatePublic(new RSAPublicKeySpec(modulus, publicExponent));
-        }
-        if ("ssh-dss".equals(encodedKeyFormat)) {
-            BigInteger p = new BigInteger(readElement(inputStream));
-            BigInteger q = new BigInteger(readElement(inputStream));
-            BigInteger g = new BigInteger(readElement(inputStream));
-            BigInteger y = new BigInteger(readElement(inputStream));
-            KeyFactory keyFactory = SecurityUtils.getKeyFactory(DSS_ALGORITHM);
-            return keyFactory.generatePublic(new DSAPublicKeySpec(y, p, q, g));
-        }
-        throw new InvalidKeySpecException(String.format("Unsupported key format: %s", encodedKeyFormat));
-    }
-
-    private byte[] readElement(DataInputStream dataInputStream) throws IOException {
-        int blockLength = dataInputStream.readInt();
-        return IOUtils.readFully(dataInputStream, blockLength);
+        PublicKeyEntryDecoder<?, ?> publicKeyEntryDecoder = KeyUtils.getPublicKeyEntryDecoder(keyType);
+        return publicKeyEntryDecoder.decodePublicKey(keyBytes);
     }
 
     @Value("${inbox.cache.ttl}")

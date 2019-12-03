@@ -106,13 +106,7 @@
         <dependency>
             <groupId>com.hierynomus</groupId>
             <artifactId>sshj</artifactId>
-            <version>0.22.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.i2p.crypto</groupId>
-            <artifactId>eddsa</artifactId>
-            <version>0.3.0</version>
+            <version>0.27.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
