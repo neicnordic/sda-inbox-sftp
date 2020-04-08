@@ -78,12 +78,6 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
     @Override
     public boolean authenticate(String username, PublicKey key, ServerSession session) {
         try {
-            StringWriter stringWriter = new StringWriter();
-            PemWriter pemWriter = new PemWriter(stringWriter);
-            pemWriter.writeObject(new PemObject("PUBLIC KEY", key.getEncoded()));
-            pemWriter.flush();
-            pemWriter.close();
-            log.info("Incoming public key PEM: {}", stringWriter.toString());
             Credentials credentials = credentialsCache.get(username);
             PublicKey publicKey = readKey(credentials.getPublicKey());
             return KeyUtils.compareKeys(publicKey, key);
@@ -94,17 +88,10 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
     }
 
     private PublicKey readKey(String key) throws IOException, GeneralSecurityException {
-        log.info("CEGA public key SSH: {}", key);
         String keyType = key.split(" ")[0];
         byte[] keyBytes = Base64.decodeBase64(key.split(" ")[1]);
         PublicKeyEntryDecoder<?, ?> publicKeyEntryDecoder = KeyUtils.getPublicKeyEntryDecoder(keyType);
         PublicKey publicKey = publicKeyEntryDecoder.decodePublicKey(null, keyType, keyBytes, null);
-        StringWriter stringWriter = new StringWriter();
-        PemWriter pemWriter = new PemWriter(stringWriter);
-        pemWriter.writeObject(new PemObject("PUBLIC KEY", publicKey.getEncoded()));
-        pemWriter.flush();
-        pemWriter.close();
-        log.info("CEGA public key PEM: {}", stringWriter.toString());
         return publicKey;
     }
 
