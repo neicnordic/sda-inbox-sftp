@@ -12,6 +12,8 @@ import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.auth.password.PasswordChangeRequiredException;
 import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -21,6 +23,7 @@ import org.springframework.util.StringUtils;
 import se.nbis.lega.inbox.pojo.Credentials;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.concurrent.TimeUnit;
@@ -75,6 +78,12 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
     @Override
     public boolean authenticate(String username, PublicKey key, ServerSession session) {
         try {
+            StringWriter stringWriter = new StringWriter();
+            PemWriter pemWriter = new PemWriter(stringWriter);
+            pemWriter.writeObject(new PemObject("PUBLIC KEY", key.getEncoded()));
+            pemWriter.flush();
+            pemWriter.close();
+            log.info("Incoming public key PEM: {}", stringWriter.toString());
             Credentials credentials = credentialsCache.get(username);
             PublicKey publicKey = readKey(credentials.getPublicKey());
             return KeyUtils.compareKeys(publicKey, key);
@@ -85,10 +94,18 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
     }
 
     private PublicKey readKey(String key) throws IOException, GeneralSecurityException {
+        log.info("CEGA public key SSH: {}", key);
         String keyType = key.split(" ")[0];
         byte[] keyBytes = Base64.decodeBase64(key.split(" ")[1]);
         PublicKeyEntryDecoder<?, ?> publicKeyEntryDecoder = KeyUtils.getPublicKeyEntryDecoder(keyType);
-        return publicKeyEntryDecoder.decodePublicKey(null, keyType, keyBytes, null);
+        PublicKey publicKey = publicKeyEntryDecoder.decodePublicKey(null, keyType, keyBytes, null);
+        StringWriter stringWriter = new StringWriter();
+        PemWriter pemWriter = new PemWriter(stringWriter);
+        pemWriter.writeObject(new PemObject("PUBLIC KEY", publicKey.getEncoded()));
+        pemWriter.flush();
+        pemWriter.close();
+        log.info("CEGA public key PEM: {}", stringWriter.toString());
+        return publicKey;
     }
 
     @Value("${inbox.cache.ttl}")

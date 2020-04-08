@@ -77,7 +77,7 @@ public class InboxAuthenticatorTest extends InboxTest {
         mockCEGAEndpoint(username, password, PasswordHashingAlgorithm.BLOWFISH, KeyAlgorithm.RSA, HttpStatus.OK);
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         File privateKey = new File(classloader.getResource(KeyAlgorithm.RSA.name().toLowerCase() + ".sec").toURI());
-        ssh.authPublickey(username, privateKey.getPath());
+        ssh.authPublickey(username, ssh.loadKeys(privateKey.getPath(), "password"));
         assertNotNull(ssh.newSFTPClient());
     }
 
