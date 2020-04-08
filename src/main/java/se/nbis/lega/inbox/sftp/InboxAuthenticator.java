@@ -12,6 +12,7 @@ import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.auth.password.PasswordChangeRequiredException;
 import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -23,6 +24,7 @@ import se.nbis.lega.inbox.pojo.Credentials;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
+import java.security.Security;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -31,6 +33,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthenticator {
+
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     private long defaultCacheTTL;
     private CredentialsProvider credentialsProvider;
