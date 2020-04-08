@@ -1,7 +1,6 @@
 package se.nbis.lega.inbox.sftp;
 
 import com.google.gson.Gson;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -26,10 +25,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.CopyOption;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
@@ -105,7 +101,7 @@ public class InboxSftpEventListener implements SftpEventListener {
      * {@inheritDoc}
      */
     @Override
-    public void removed(ServerSession session, Path path, Throwable thrown) {
+    public void removed(ServerSession session, Path path, boolean isDirectory, Throwable thrown) {
         log.info("User {} removed entry: {}", session.getUsername(), path);
         try {
             processFile(REMOVE, session.getUsername(), null, path);
@@ -163,7 +159,7 @@ public class InboxSftpEventListener implements SftpEventListener {
      * {@inheritDoc}
      */
     @Override
-    public void close(ServerSession session, String remoteHandle, Handle localHandle) {
+    public void closed(ServerSession session, String remoteHandle, Handle localHandle, Throwable thrown) {
         Path path = localHandle.getFile();
         boolean fileModified = session.getBooleanProperty(path.toString(), false);
         if (fileModified) {
