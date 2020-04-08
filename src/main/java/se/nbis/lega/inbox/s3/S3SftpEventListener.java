@@ -44,9 +44,9 @@ public class S3SftpEventListener extends InboxSftpEventListener {
      * {@inheritDoc}
      */
     @Override
-    public void removed(ServerSession session, Path path, Throwable thrown) {
+    public void removed(ServerSession session, Path path, boolean isDirectory, Throwable thrown) {
         s3Service.remove(session.getUsername(), path);
-        super.removed(session, path, thrown);
+        super.removed(session, path, isDirectory, thrown);
     }
 
     /**
