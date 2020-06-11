@@ -138,7 +138,7 @@ public class InboxSftpEventListenerTest extends InboxTest {
         assertEquals(username, fileDescriptor.getUser());
         String expectedOldPath = "/test/test1";
         String expectedPath = "/test/test2";
-        assertTrue(new File(expectedPath).exists());
+        assertTrue(new File(file.getName()).exists());
         assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(0, fileDescriptor.getFileSize());
