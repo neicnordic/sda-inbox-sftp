@@ -45,6 +45,7 @@ public class InboxSftpEventListener implements SftpEventListener {
             SHA_256.toLowerCase().replace("-", "")
     );
 
+    protected String inboxFolder;
     protected String exchange;
     protected String routingKeyChecksums;
     protected String routingKeyFiles;
@@ -201,17 +202,17 @@ public class InboxSftpEventListener implements SftpEventListener {
         if (REMOVE == operation) {
             FileDescriptor fileDescriptor = new FileDescriptor();
             fileDescriptor.setUser(username);
-            fileDescriptor.setFilePath(getFilePath(dstPath));
+            fileDescriptor.setFilePath(getFilePath(dstPath, username));
             fileDescriptor.setOperation(operation.name().toLowerCase());
             publishMessage(file, extension, fileDescriptor);
         } else if (file.exists()) {
             FileDescriptor fileDescriptor = new FileDescriptor();
             fileDescriptor.setUser(username);
-            fileDescriptor.setFilePath(getFilePath(dstPath));
+            fileDescriptor.setFilePath(getFilePath(dstPath, username));
             fileDescriptor.setFileLastModified(file.lastModified() / 1000);
             fileDescriptor.setOperation(operation.name().toLowerCase());
             if (RENAME == operation) {
-                fileDescriptor.setOldPath(getFilePath(srcPath));
+                fileDescriptor.setOldPath(getFilePath(srcPath, username));
             }
             if (file.isFile()) {
                 fileDescriptor.setFileSize(FileUtils.sizeOf(file));
@@ -250,8 +251,17 @@ public class InboxSftpEventListener implements SftpEventListener {
         log.info("Message published to {} exchange with routing key {}: {}", exchange, routingKey, json);
     }
 
-    protected String getFilePath(Path path) {
-        return path.toFile().getAbsolutePath();
+    protected String getFilePath(Path path, String username) {
+        String key = path.toFile().getAbsolutePath().replaceFirst(inboxFolder, "").replaceFirst(username, "");
+        if (key.startsWith("/")) {
+            key = key.substring(1);
+        }
+        log.debug("POSIX filepath is {} for user {}", key, username);
+        return key;
+    }
+    @Value("${inbox.local.directory}")
+    public void setInboxFolder(String inboxFolder) {
+        this.inboxFolder = inboxFolder;
     }
 
     @Value("${inbox.mq.exchange}")
