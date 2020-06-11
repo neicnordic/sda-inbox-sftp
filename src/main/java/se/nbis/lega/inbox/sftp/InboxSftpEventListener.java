@@ -256,7 +256,7 @@ public class InboxSftpEventListener implements SftpEventListener {
         if (key.startsWith("/")) {
             key = key.substring(1);
         }
-        log.debug("Filepath on POSIX we use is {} for user {}", key, username);
+        log.debug("POSIX filepath is {} for user {}", key, username);
         return key;
     }
     @Value("${inbox.local.directory}")
