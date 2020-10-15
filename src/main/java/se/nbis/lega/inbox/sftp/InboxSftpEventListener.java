@@ -252,7 +252,7 @@ public class InboxSftpEventListener implements SftpEventListener {
     }
 
     protected String getFilePath(Path path, String username) {
-        String key = path.toFile().getAbsolutePath().replaceFirst(inboxFolder, "").replaceFirst(username, "");
+        String key = path.toFile().getAbsolutePath().replaceFirst(inboxFolder, "");
         if (key.startsWith("/")) {
             key = key.substring(1);
         }

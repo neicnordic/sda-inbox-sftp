@@ -66,8 +66,8 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        String expectedPath = "/" + file.getName();
-        assertTrue(new File(file.getName()).exists());
+        String expectedPath = username + "/" + file.getName();
+        assertTrue(new File(expectedPath).exists());
         assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
@@ -85,8 +85,8 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = hashBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        String expectedPath = "/" + hash.getName();
-        assertTrue(new File(hash.getName()).exists());
+        String expectedPath = username + "/" + hash.getName();
+        assertTrue(new File(expectedPath).exists());
         assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertEquals(FileUtils.readFileToString(hash, Charset.defaultCharset()), fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
@@ -109,9 +109,9 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        String expectedOldPath = "/" + file.getName();
-        String expectedPath = "/test/" + file.getName();
-        assertTrue(new File(file.getName()).exists());
+        String expectedOldPath = username + "/" + file.getName();
+        String expectedPath = username + "/test/" + file.getName();
+        assertTrue(new File(expectedPath).exists());
         assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
@@ -136,9 +136,9 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        String expectedOldPath = "/test/test1";
-        String expectedPath = "/test/test2";
-        assertTrue(new File(file.getName()).exists());
+        String expectedOldPath = username + "/test/test1";
+        String expectedPath = username + "/test/test2";
+        assertTrue(new File(expectedPath).exists());
         assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
         assertEquals(0, fileDescriptor.getFileSize());
@@ -158,7 +158,7 @@ public class InboxSftpEventListenerTest extends InboxTest {
         FileDescriptor fileDescriptor = fileBlockingQueue.poll();
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
-        String expectedPath = "/" + file.getName();
+        String expectedPath = username + "/" + file.getName();
         assertFalse(new File(expectedPath).exists());
         assertEquals(expectedPath, fileDescriptor.getFilePath());
         assertNull(fileDescriptor.getContent());
