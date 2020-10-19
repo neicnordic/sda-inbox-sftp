@@ -51,7 +51,8 @@ Environment variables used:
 | BROKER_HOST           | mq                 | RabbitMQ broker host                                       |
 | BROKER_PORT           | 5672               | RabbitMQ broker port                                       |
 | BROKER_VHOST          | /                  | RabbitMQ broker vhost                                      |
-| BROKER_EXCHANGE       | cega               | RabbitMQ broker exchange                                   |
+| BROKER_EXCHANGE       | sda                | RabbitMQ broker exchange                                   |
+| BROKER_ROUTING_KEY    | files              | RabbitMQ broker routing key                                |
 | INBOX_PORT            | 2222               | Inbox port                                                 |
 | INBOX_LOCATION        | /ega/inbox/        | Path to POSIX Inbox backend                                |
 | INBOX_KEYPAIR         |                    | Path to RSA keypair file                                   |
