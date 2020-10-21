@@ -21,15 +21,16 @@ package se.nbis.lega.inbox.filesystem;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.root.RootedFileSystemProvider;
-import org.apache.sshd.common.session.Session;
+import org.apache.sshd.common.session.SessionContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystem;
+import java.nio.file.Paths;
 import java.util.Collections;
-
+import java.nio.file.Path;
 /**
  * SFTP filesystem factory that backs Mina with <code>RootedFileSystem</code>.
  */
@@ -43,7 +44,7 @@ public class LocalFileSystemFactory implements FileSystemFactory {
      * {@inheritDoc}
      */
     @Override
-    public FileSystem createFileSystem(Session session) throws IOException {
+    public FileSystem createFileSystem(SessionContext session) throws IOException {
         String username = session.getUsername();
         String root;
         if (inboxFolder.endsWith(File.separator)) {
@@ -63,4 +64,15 @@ public class LocalFileSystemFactory implements FileSystemFactory {
         this.inboxFolder = inboxFolder;
     }
 
+    @Override
+    public Path getUserHomeDir(SessionContext session) throws IOException {
+        String username = session.getUsername();
+        String root;
+        if (inboxFolder.endsWith(File.separator)) {
+            root = inboxFolder + username;
+        } else {
+            root = inboxFolder + File.separator + username;
+        }
+        return Paths.get(root);
+    }
 }
