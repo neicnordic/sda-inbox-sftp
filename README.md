@@ -1,6 +1,6 @@
 # SFTP Inbox for NeIC SDA
 
-[![Build Status](https://travis-ci.org/neicnordic/LocalEGA-inbox.svg?branch=master)](https://travis-ci.org/neicnordic/LocalEGA-inbox)
+![Java CI](https://github.com/neicnordic/sda-inbox-sftp/workflows/Java%20CI/badge.svg)
 
 ## Federated EGA/LocalEGA login system
 
