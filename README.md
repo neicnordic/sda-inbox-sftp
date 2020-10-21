@@ -1,8 +1,8 @@
-# SFTP Inbox for LocalEGA
+# SFTP Inbox for NeIC SDA
 
 [![Build Status](https://travis-ci.org/neicnordic/LocalEGA-inbox.svg?branch=master)](https://travis-ci.org/neicnordic/LocalEGA-inbox)
 
-## LocalEGA login system
+## Federated EGA/LocalEGA login system
 
 Central EGA contains a database of users, with IDs and passwords.
 
