@@ -3,8 +3,7 @@ updates:
 - package-ecosystem: maven
   directory: "/"
   schedule:
-    interval: daily
+    interval: weekly
   open-pull-requests-limit: 10
   reviewers:
-    - "dtitov"
     - "blankdots"
