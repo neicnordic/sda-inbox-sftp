@@ -2,7 +2,7 @@ package se.nbis.lega.inbox.s3;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.server.session.ServerSession;
-import org.apache.sshd.server.subsystem.sftp.Handle;
+import org.apache.sshd.sftp.server.Handle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
