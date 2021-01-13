@@ -26,9 +26,6 @@
 
     <dependencies>
         <dependency>
-<!--            <groupId>net.i2p.crypto</groupId>-->
-<!--            <artifactId>eddsa</artifactId>-->
-<!--            <version>0.3.0</version>-->
             <groupId>org.c02e.jpgpj</groupId>
             <artifactId>jpgpj</artifactId>
             <version>1.0</version>
