@@ -5,6 +5,6 @@ package se.nbis.lega.inbox.pojo;
  */
 public enum KeyAlgorithm {
 
-    RSA, DSS, ED25519
+    RSA, ED25519
 
 }

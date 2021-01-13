@@ -26,9 +26,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>net.i2p.crypto</groupId>
-            <artifactId>eddsa</artifactId>
-            <version>0.3.0</version>
+<!--            <groupId>net.i2p.crypto</groupId>-->
+<!--            <artifactId>eddsa</artifactId>-->
+<!--            <version>0.3.0</version>-->
+            <groupId>org.c02e.jpgpj</groupId>
+            <artifactId>jpgpj</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -100,7 +103,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.67</version>
+            <version>1.68</version>
         </dependency>
 
         <dependency>
@@ -131,7 +134,7 @@
         </dependency>
         <dependency>
             <groupId>io.findify</groupId>
-            <artifactId>s3mock_2.12</artifactId>
+            <artifactId>s3mock_2.13</artifactId>
             <version>0.2.6</version>
             <scope>test</scope>
         </dependency>
