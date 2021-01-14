@@ -7,9 +7,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.sshd.server.session.ServerSession;
-import org.apache.sshd.server.subsystem.sftp.FileHandle;
-import org.apache.sshd.server.subsystem.sftp.Handle;
-import org.apache.sshd.server.subsystem.sftp.SftpEventListener;
+import org.apache.sshd.sftp.server.FileHandle;
+import org.apache.sshd.sftp.server.Handle;
+import org.apache.sshd.sftp.server.SftpEventListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -124,7 +124,7 @@ public class InboxSftpEventListener implements SftpEventListener {
      */
     @Override
     public void modifiedAttributes(ServerSession session, Path path, Map<String, ?> attrs, Throwable thrown) {
-        log.info("User {} modified attributes of {}: ", session.getUsername(), path, attrs);
+        log.info("User {} modified attributes of {} {}: ", session.getUsername(), path, attrs);
     }
 
     /**
