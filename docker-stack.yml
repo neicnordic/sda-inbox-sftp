@@ -3,7 +3,7 @@ version: '3.3'
 services:
 
   inbox:
-    image: nbisweden/ega-mina-inbox:uh
+    image: neicnordic/sda-inbox-sftp
     ports:
       - "2222:2222"
     deploy:
