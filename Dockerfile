@@ -1,4 +1,4 @@
-FROM maven:3.6.1-jdk-13-alpine as builder
+FROM maven:3.8.4-openjdk-17-slim as builder
 
 COPY pom.xml .
 
@@ -8,7 +8,7 @@ COPY src/ /src/
 
 RUN mvn clean install -DskipTests --no-transfer-progress
 
-FROM openjdk:13-alpine
+FROM openjdk:17-alpine
 
 RUN addgroup -g 1000 lega && \
     adduser -D -u 1000 -G lega lega
