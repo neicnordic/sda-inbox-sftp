@@ -42,7 +42,7 @@ public class CredentialsProvider {
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(cegaCredentials.getBytes()));
         ResponseEntity<ResponseHolder> response = restTemplate.exchange(url.toURI(), HttpMethod.GET, new HttpEntity<>(headers), ResponseHolder.class);
-        HttpStatus statusCode = response.getStatusCode();
+        HttpStatus statusCode = (HttpStatus) response.getStatusCode();
         if (!HttpStatus.OK.equals(statusCode)) {
             throw new RestClientException(String.format("Bad response from CentralEGA: %s, %s", statusCode.value(), statusCode.getReasonPhrase()));
         }
