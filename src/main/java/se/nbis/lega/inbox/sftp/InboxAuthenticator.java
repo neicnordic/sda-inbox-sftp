@@ -43,12 +43,13 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
                 }
 
                 public long expireAfterUpdate(String key, Credentials graph, long currentTime, long currentDuration) {
-                    return Long.MAX_VALUE;
+                    return TimeUnit.SECONDS.toNanos(defaultCacheTTL);
                 }
 
                 public long expireAfterRead(String key, Credentials graph, long currentTime, long currentDuration) {
-                    return Long.MAX_VALUE;
+                    return TimeUnit.SECONDS.toNanos(defaultCacheTTL);
                 }
+
             })
             .build(key -> credentialsProvider.getCredentials(key));
 
