@@ -61,9 +61,13 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         try {
             Credentials credentials = credentialsCache.get(username);
             String hash = credentials.getPasswordHash();
-            return StringUtils.startsWithIgnoreCase(hash, "$2")
-                    ? BCrypt.checkpw(password, hash)
-                    : ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, hash));
+            if (!password.equals("")) {
+                return StringUtils.startsWithIgnoreCase(hash, "$2")
+                        ? BCrypt.checkpw(password, hash)
+                        : ObjectUtils.nullSafeEquals(hash, Crypt.crypt(password, hash));
+            }
+            log.error("password is empty, cannot login user");
+            return false;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return false;
@@ -77,8 +81,12 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
     public boolean authenticate(String username, PublicKey key, ServerSession session) {
         try {
             Credentials credentials = credentialsCache.get(username);
-            PublicKey publicKey = readKey(credentials.getPublicKey());
-            return KeyUtils.compareKeys(publicKey, key);
+            if (credentials.getPublicKey() != null && key != null) {
+                PublicKey publicKey = readKey(credentials.getPublicKey());
+                return KeyUtils.compareKeys(publicKey, key);
+            }
+            log.error("key is empty, cannot login user");
+            return false;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return false;
