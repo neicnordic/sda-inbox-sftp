@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +42,7 @@ public class SFTPConfiguration {
     public SshServer sshServer() throws IOException {
         SshServer sshd = SshServer.setUpDefaultServer();
         sshd.setPort(inboxPort);
-        sshd.setKeyPairProvider(StringUtils.isEmpty(inboxKeypair) ? new SimpleGeneratorHostKeyProvider() : new BouncyCastleGeneratorHostKeyProvider(new File(inboxKeypair).toPath()));
+        sshd.setKeyPairProvider(ObjectUtils.isEmpty(inboxKeypair) ? new SimpleGeneratorHostKeyProvider() : new BouncyCastleGeneratorHostKeyProvider(new File(inboxKeypair).toPath()));
         sshd.setUserAuthFactories(Arrays.asList(new UserAuthPasswordFactory(), new UserAuthPublicKeyFactory()));
         log.info("Initializing SftpSubsystemFactory with {}", sftpEventListener.getClass());
         SftpSubsystemFactory sftpSubsystemFactory = new SftpSubsystemFactory();

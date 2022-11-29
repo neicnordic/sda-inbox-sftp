@@ -23,7 +23,7 @@ return, we store the user credentials in the local cache and create
 the user's home directory. The user now gets logged in if the password
 or public key authentication succeeds. Upon subsequent login attempts,
 only the local cache is queried, until the user's credentials
-expire. The cache has a default TTL of one hour, and is wiped clean
+expire. The cache has a default TTL of 5 minutes, and is wiped clean
 upon reboot (as a cache should). Default TTL can be configured via ``CACHE_TTL`` env var.
 
 The user's home directory is created when its credentials upon successful login.
@@ -44,31 +44,31 @@ while S3 is the real final destination for the uploaded files.
 Environment variables used:
 
 
-| Variable name         | Default value      | Description                                                |
-|-----------------------|--------------------|------------------------------------------------------------|
-| BROKER_USERNAME       | guest              | RabbitMQ broker username                                   |
-| BROKER_PASSWORD       | guest              | RabbitMQ broker password                                   |
-| BROKER_HOST           | mq                 | RabbitMQ broker host                                       |
-| BROKER_PORT           | 5672               | RabbitMQ broker port                                       |
-| BROKER_VHOST          | /                  | RabbitMQ broker vhost                                      |
-| BROKER_EXCHANGE       | sda                | RabbitMQ broker exchange                                   |
-| BROKER_ROUTING_KEY    | files              | RabbitMQ broker routing key                                |
-| INBOX_PORT            | 2222               | Inbox port                                                 |
-| INBOX_LOCATION        | /ega/inbox/        | Path to POSIX Inbox backend                                |
-| INBOX_KEYPAIR         |                    | Path to RSA keypair file                                   |
-| KEYSTORE_TYPE         | JKS                | Keystore type to use, JKS or PKCS12                        |
+| Variable name         | Default value     | Description                                                |
+|-----------------------|-------------------|------------------------------------------------------------|
+| BROKER_USERNAME       | guest             | RabbitMQ broker username                                   |
+| BROKER_PASSWORD       | guest             | RabbitMQ broker password                                   |
+| BROKER_HOST           | mq                | RabbitMQ broker host                                       |
+| BROKER_PORT           | 5672              | RabbitMQ broker port                                       |
+| BROKER_VHOST          | /                 | RabbitMQ broker vhost                                      |
+| BROKER_EXCHANGE       | sda               | RabbitMQ broker exchange                                   |
+| BROKER_ROUTING_KEY    | files             | RabbitMQ broker routing key                                |
+| INBOX_PORT            | 2222              | Inbox port                                                 |
+| INBOX_LOCATION        | /ega/inbox/       | Path to POSIX Inbox backend                                |
+| INBOX_KEYPAIR         |                   | Path to RSA keypair file                                   |
+| KEYSTORE_TYPE         | JKS               | Keystore type to use, JKS or PKCS12                        |
 | KEYSTORE_PATH         | /etc/ega/inbox.jks | Path to Keystore file                                      |
-| KEYSTORE_PASSWORD     |                    | Password to access the Keystore                            |
-| CACHE_TTL             | 3600.0             | CEGA credentials time-to-live                              |
-| CEGA_ENDPOINT         |                    | CEGA REST endpoint                                         |
-| CEGA_ENDPOINT_CREDS   |                    | CEGA REST credentials                                      |
+| KEYSTORE_PASSWORD     |                   | Password to access the Keystore                            |
+| CACHE_TTL             | 300.0             | CEGA credentials time-to-live                              |
+| CEGA_ENDPOINT         |                   | CEGA REST endpoint                                         |
+| CEGA_ENDPOINT_CREDS   |                   | CEGA REST credentials                                      |
 | S3_ENDPOINT           | inbox-backend:9000 | Inbox S3 backend URL                                       |
-| S3_REGION             | us-east-1          | Inbox S3 backend region (us-east-1 is default in Minio)    |
-| S3_ACCESS_KEY         |                    | Inbox S3 backend access key (S3 disabled if not specified) |
-| S3_SECRET_KEY         |                    | Inbox S3 backend secret key (S3 disabled if not specified) |
-| USE_SSL               | true               | true if S3 Inbox backend should be accessed by HTTPS       |
-| LOGSTASH_HOST         |                    | Hostname of the Logstash instance (if any)                 |
-| LOGSTASH_PORT         |                    | Port of the Logstash instance (if any)                     |
+| S3_REGION             | us-east-1         | Inbox S3 backend region (us-east-1 is default in Minio)    |
+| S3_ACCESS_KEY         |                   | Inbox S3 backend access key (S3 disabled if not specified) |
+| S3_SECRET_KEY         |                   | Inbox S3 backend secret key (S3 disabled if not specified) |
+| USE_SSL               | true              | true if S3 Inbox backend should be accessed by HTTPS       |
+| LOGSTASH_HOST         |                   | Hostname of the Logstash instance (if any)                 |
+| LOGSTASH_PORT         |                   | Port of the Logstash instance (if any)                     |
 
 If `LOGSTASH_HOST` or `LOGSTASH_PORT` is empty, Logstash logging will not be enabled.
 

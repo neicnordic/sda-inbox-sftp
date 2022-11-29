@@ -8,13 +8,13 @@ jobs:
   test_inbox:
     strategy:
       matrix:
-        java-version: [17]
+        java-version: [18]
       fail-fast: true
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 17
+      - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v3
         with:
           distribution: zulu

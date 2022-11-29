@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import se.nbis.lega.inbox.sftp.InboxSftpEventListener;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.CopyOption;
 import java.nio.file.Path;

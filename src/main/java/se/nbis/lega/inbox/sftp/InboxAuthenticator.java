@@ -12,8 +12,6 @@ import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.auth.password.PasswordChangeRequiredException;
 import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -23,7 +21,6 @@ import org.springframework.util.StringUtils;
 import se.nbis.lega.inbox.pojo.Credentials;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.concurrent.TimeUnit;
@@ -46,12 +43,13 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
                 }
 
                 public long expireAfterUpdate(String key, Credentials graph, long currentTime, long currentDuration) {
-                    return Long.MAX_VALUE;
+                    return TimeUnit.SECONDS.toNanos(defaultCacheTTL);
                 }
 
                 public long expireAfterRead(String key, Credentials graph, long currentTime, long currentDuration) {
-                    return Long.MAX_VALUE;
+                    return TimeUnit.SECONDS.toNanos(defaultCacheTTL);
                 }
+
             })
             .build(key -> credentialsProvider.getCredentials(key));
 
