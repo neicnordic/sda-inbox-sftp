@@ -23,7 +23,8 @@ For a test example use:
 
 ```command
 cd ../
-sh ./dev_utils/sftp-testing.sh
+sh ./dev_utils/sftp-testing-ssh.sh
+sh ./dev_utils/sftp-testing-pass.sh
 ```
 
 For manual testing use:

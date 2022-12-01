@@ -20,7 +20,12 @@ jobs:
           docker-compose up -d
           sleep 20
 
-      - name: Run test for sftp
+      - name: Run test for sftp ssh connection
         run: |
           chmod 600 src/test/resources/id_ed25519
-          sh ./dev_utils/sftp-testing.sh
+          sh ./dev_utils/sftp-testing-ssh.sh
+
+      - name: Run test for sftp with password
+        run: |
+          sudo apt-get install expect -y
+          sh ./dev_utils/sftp-testing-pass.sh
