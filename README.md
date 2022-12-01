@@ -14,6 +14,8 @@ itself. The user is locked within their home folder, which is done programmatica
 The solution uses CentralEGA's user IDs but can also be extended to
 use Elixir IDs (of which we strip the ``@elixir-europe.org`` suffix).
 
+For local development/testing see instructions in [dev_utils](/dev_utils) folder.
+There is an README file in the [dev_utils](/dev_utils) folder with sections for running the pipeline locally using Docker Compose.
 
 The procedure is as follows. The inbox is started without any created
 user. When a user wants to log into the inbox (actually, only ``sftp``
