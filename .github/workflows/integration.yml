@@ -16,7 +16,7 @@ jobs:
         run: |
           cd dev_utils
           bash ./make_certs.sh
-          docker-compose up javacertfixer
+          docker-compose up certfixer
           docker-compose up -d
           sleep 20
 

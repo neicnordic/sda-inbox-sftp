@@ -7,27 +7,12 @@ services:
       - /bin/sh
       - -c
       - |
-        cp /origcerts/* /certs
-        chown -R nobody.nobody /certs/*
-        chmod -R og-rw /certs/*-key.pem
-        chown -R 100.101 /certs/mq*
-        chown -R 1000.1000 /certs/cega*
-        ls -la /certs/
-
-    container_name: certfixer
-    image: alpine:latest
-    volumes:
-      - ./certs:/origcerts
-      - certs:/certs
-  javacertfixer:
-    image: neicnordic/openssl-alpine:latest
-    depends_on:
-      - certfixer
-    command:
-      - /bin/sh
-      - -c
-      - |
-        [[ ! -f /tls/cacerts ]] || exit 0 &&
+        cp /origcerts/* /tls-certs
+        chown -R nobody.nobody /tls-certs/*
+        chmod -R og-rw /tls-certs/*-key.pem
+        chown -R 100.101 /tls-certs/mq*
+        chown -R 1000.1000 /tls-certs/cega*
+        ls -la /tls-certs/ &&
         keytool -import \
                 -trustcacerts \
                 -file /tls-certs/ca.pem \
@@ -40,12 +25,15 @@ services:
                         -inkey /tls-certs/inbox-key.pem \
                         -in /tls-certs/inbox.pem \
                         -passout pass:"$${KEYSTORE_PASSWORD}"
-    environment:
-      - KEYSTORE_PASSWORD=testingthis
+
+    container_name: certfixer
+    image: neicnordic/openssl-alpine:latest
     volumes:
+      - ./certs:/origcerts
       - certs:/tls-certs
       - java:/tls
-
+    environment:
+      - KEYSTORE_PASSWORD=testingthis
   inbox:
     image: neicnordic/sda-inbox-sftp
     ports:
@@ -56,7 +44,6 @@ services:
         delay: 5s
         window: 120s
     depends_on:
-      - javacertfixer
       - cega
       - mq
     environment:
