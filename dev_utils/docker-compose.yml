@@ -55,6 +55,7 @@ services:
       - BROKER_HOST=mq
       - BROKER_USERNAME=test
       - BROKER_PASSWORD=test
+      - BROKER_VHOST=test
       - KEYSTORE_PATH=/etc/ssl/certs/java/keystore.p12
       - KEYSTORE_PASSWORD=testingthis
     volumes:
