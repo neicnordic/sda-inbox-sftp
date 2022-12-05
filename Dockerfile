@@ -1,4 +1,4 @@
-FROM maven:3.8.6-openjdk-18-slim as builder
+FROM maven:3.8.6-eclipse-temurin-19-alpine as builder
 
 COPY pom.xml .
 
@@ -8,7 +8,7 @@ COPY src/ /src/
 
 RUN mvn clean install -DskipTests --no-transfer-progress
 
-FROM openjdk:18-alpine
+FROM openjdk:19-alpine
 
 RUN addgroup -g 1000 lega && \
     adduser -D -u 1000 -G lega lega
