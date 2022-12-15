@@ -23,6 +23,7 @@ import se.nbis.lega.inbox.pojo.Credentials;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -82,8 +83,11 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         try {
             Credentials credentials = credentialsCache.get(username);
             if (credentials.getPublicKey() != null && key != null) {
-                PublicKey publicKey = readKey(credentials.getPublicKey());
-                return KeyUtils.compareKeys(publicKey, key);
+                List<String> keysList= credentials.getPublicKey();
+                for (String pubKey : keysList) {
+                    PublicKey publicKey = readKey(pubKey);
+                    return KeyUtils.compareKeys(publicKey, key);
+                }
             }
             log.error("key is empty, cannot login user");
             return false;

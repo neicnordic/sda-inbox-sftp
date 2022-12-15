@@ -47,7 +47,7 @@ services:
       - cega
       - mq
     environment:
-      - CEGA_ENDPOINT=https://cega:8443/lega/v1/legas/users/%s?idType=username
+      - CEGA_ENDPOINT=https://cega:8443/username/%s
       - CEGA_ENDPOINT_CREDS=legatest:OfEoDPVadIfd4CZUWkisrrVQbJ2yQPIH
       - S3_ACCESS_KEY
       - S3_SECRET_KEY
