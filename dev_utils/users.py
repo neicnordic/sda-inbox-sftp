@@ -17,7 +17,6 @@ import ssl
 
 from aiohttp import web
 
-# logging.basicConfig(format='[%(asctime)s][%(levelname)-8s] (L:%(lineno)s) %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 logging.basicConfig(format="[%(levelname)-8s] (L:%(lineno)s) %(message)s")
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.INFO)
@@ -26,24 +25,15 @@ filepath = None
 instances = {}
 store = None
 usernames = {}
-uids = {}
 
 
 def fetch_user_info(identifier, query):
-    id_type = query.get("idType", None)
-    if not id_type:
-        raise web.HTTPBadRequest(text="Missing or wrong idType")
-    LOG.info(f"Requesting User {identifier} [type {id_type}]")
-    if id_type == "username":
+    LOG.info(f"Requesting User {identifier}")
+    try:
         pos = usernames.get(identifier, None)
         return store[pos] if pos is not None else None
-    if id_type == "uid":
-        try:
-            pos = uids.get(int(identifier), None)
-            return store[pos] if pos is not None else None
-        except Exception:
-            return None
-    raise web.HTTPBadRequest(text="Missing or wrong idType")
+    except:
+        raise web.HTTPBadRequest(text="Missing or wrong idType")
 
 
 async def user(request):
@@ -64,25 +54,7 @@ async def user(request):
     user_info = fetch_user_info(request.match_info["identifier"], request.rel_url.query)
     if user_info is None:
         raise web.HTTPBadRequest(text=f"No info for that user\n")
-    return web.json_response(
-        {
-            "header": {
-                "apiVersion": "v1",
-                "code": "200",
-                "service": "users",
-                "developerMessage": "",
-                "userMessage": "OK",
-                "errorCode": "1",
-                "docLink": "https://ega-archive.org",
-                "errorStack": "",
-            },
-            "response": {
-                "numTotalResults": 1,
-                "resultType": "eu.crg.ega.microservice.dto.lega.v1.users.LocalEgaUser",
-                "result": [user_info],
-            },
-        }
-    )
+    return web.json_response(user_info)
 
 
 def main():
@@ -101,7 +73,7 @@ def main():
     load_users()
 
     # Registering the routes
-    server.router.add_get("/lega/v1/legas/users/{identifier}", user, name="user")
+    server.router.add_get("/username/{identifier}", user, name="user")
 
     # SSL settings
     cacertfile = "/tls/ca.pem"
@@ -128,7 +100,6 @@ def load_users():
         store = json.load(f)
     for i, d in enumerate(store):
         usernames[d["username"]] = i  # No KeyError, should be there
-        uids[d["uid"]] = i
 
 
 if __name__ == "__main__":

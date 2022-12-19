@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.List;
+
 /**
  * POJO for CEGA credentials.
  */
@@ -15,6 +17,6 @@ public class Credentials {
     private String passwordHash;
 
     @JsonProperty("sshPublicKey")
-    private String publicKey;
+    private List<String> publicKey;
 
 }

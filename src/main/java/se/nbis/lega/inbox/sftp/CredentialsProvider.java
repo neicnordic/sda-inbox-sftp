@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import se.nbis.lega.inbox.pojo.Credentials;
-import se.nbis.lega.inbox.pojo.ResponseHolder;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -41,12 +40,12 @@ public class CredentialsProvider {
         URL url = new URL(String.format(cegaEndpoint, username));
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString(cegaCredentials.getBytes()));
-        ResponseEntity<ResponseHolder> response = restTemplate.exchange(url.toURI(), HttpMethod.GET, new HttpEntity<>(headers), ResponseHolder.class);
+        ResponseEntity<Credentials> response = restTemplate.exchange(url.toURI(), HttpMethod.GET, new HttpEntity<>(headers), Credentials.class);
         HttpStatus statusCode = (HttpStatus) response.getStatusCode();
         if (!HttpStatus.OK.equals(statusCode)) {
             throw new RestClientException(String.format("Bad response from CentralEGA: %s, %s", statusCode.value(), statusCode.getReasonPhrase()));
         }
-        return response.getBody().getResultsHolder().getCredentials().iterator().next();
+        return response.getBody();
     }
 
     @Value("${inbox.cega.endpoint}")
