@@ -28,6 +28,8 @@ public class Synchronizer implements ApplicationListener<ApplicationReadyEvent> 
 
     private S3Service s3Service;
 
+    private String s3Bucket;
+
     /**
      * {@inheritDoc}
      */
@@ -45,15 +47,17 @@ public class Synchronizer implements ApplicationListener<ApplicationReadyEvent> 
         }
     }
 
-    private void synchronizeBucket(String root, Collection<File> localFiles, String bucket) {
-        log.info("Synchronizing bucket {}", bucket);
-        s3Service.prepareBucket(bucket);
-        Collection<String> remoteKeys = s3Service.listKeys(bucket);
+    private void synchronizeBucket(String root, Collection<File> localFiles, String userPath) {
+        log.info("Synchronizing bucket {}", s3Bucket + "/" + userPath);
+        s3Service.prepareBucket();
+        Collection<String> remoteKeys = s3Service.listKeys(userPath);
         for (File localFile : localFiles) {
-            String localKey = getKey(bucket, root, localFile);
+            String localKey = getKey(userPath, root, localFile);
             if (!remoteKeys.contains(localKey)) {
                 try {
-                    s3Service.upload(bucket, getKey(bucket, root, localFile), localFile.toPath(), false);
+                    s3Service.upload(userPath,
+                            getKey(userPath, root, localFile),
+                            localFile.toPath(), false);
                 } catch (InterruptedException e) {
                     log.error(e.getMessage(), e);
                 }
@@ -84,6 +88,11 @@ public class Synchronizer implements ApplicationListener<ApplicationReadyEvent> 
     @Autowired
     public void setS3Service(S3Service s3Service) {
         this.s3Service = s3Service;
+    }
+
+    @Value("${inbox.s3.bucket}")
+    public void setS3Bucket(String s3Bucket) {
+        this.s3Bucket = s3Bucket;
     }
 
 }

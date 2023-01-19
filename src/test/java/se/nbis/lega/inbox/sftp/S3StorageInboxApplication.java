@@ -44,10 +44,11 @@ public class S3StorageInboxApplication {
     private String s3Region;
     private String s3Endpoint;
     private boolean useSSL;
+    private String s3Bucket;
 
     private Gson gson;
 
-    @ConditionalOnExpression("!'${inbox.s3.access-key}'.isEmpty() && !'${inbox.s3.secret-key}'.isEmpty()")
+    @ConditionalOnExpression("!'${inbox.s3.access-key}'.isEmpty() && !'${inbox.s3.secret-key}'.isEmpty() && !'${inbox.s3.bucket}'.isEmpty()")
     @Bean
     public AmazonS3 amazonS3() {
         new S3Mock.Builder().withPort(9000).withInMemoryBackend().build().start();
@@ -114,6 +115,11 @@ public class S3StorageInboxApplication {
     @Value("${inbox.s3.use-ssl}")
     public void setUseSSL(boolean useSSL) {
         this.useSSL = useSSL;
+    }
+
+    @Value("${inbox.s3.bucket}")
+    public void setS3Bucket(String s3Bucket) {
+        this.s3Bucket = s3Bucket;
     }
 
     @Autowired

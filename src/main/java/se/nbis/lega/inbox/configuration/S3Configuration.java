@@ -27,7 +27,7 @@ public class S3Configuration {
     private String s3SecretKey;
     private boolean useSSL;
 
-    @ConditionalOnExpression("!'${inbox.s3.access-key}'.isEmpty() && !'${inbox.s3.secret-key}'.isEmpty()")
+    @ConditionalOnExpression("!'${inbox.s3.access-key}'.isEmpty() && !'${inbox.s3.secret-key}'.isEmpty() && !'${inbox.s3.bucket}'.isEmpty()")
     @Bean
     public AmazonS3 amazonS3() {
         AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(s3Endpoint, s3Region);
@@ -69,5 +69,6 @@ public class S3Configuration {
     public void setUseSSL(boolean useSSL) {
         this.useSSL = useSSL;
     }
+
 
 }

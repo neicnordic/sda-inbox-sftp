@@ -72,7 +72,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
         assertEquals(file.getName(), fileDescriptor.getFilePath());
-        assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
+        assertTrue(amazonS3.doesObjectExist("default", fileDescriptor.getUser() + "/" + fileDescriptor.getFilePath()));
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         assertEquals(Operation.UPLOAD.name().toLowerCase(), fileDescriptor.getOperation());
@@ -90,7 +90,7 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertNotNull(fileDescriptor);
         assertEquals(username, fileDescriptor.getUser());
         assertEquals(hash.getName(), fileDescriptor.getFilePath());
-        assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
+        assertTrue(amazonS3.doesObjectExist("default", fileDescriptor.getUser() + "/" + fileDescriptor.getFilePath()));
         assertEquals(FileUtils.readFileToString(hash, Charset.defaultCharset()), fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         assertEquals(Operation.UPLOAD.name().toLowerCase(), fileDescriptor.getOperation());
@@ -114,8 +114,8 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertEquals(username, fileDescriptor.getUser());
         assertEquals(file.getName(), fileDescriptor.getOldPath());
         assertEquals("test/" + file.getName(), fileDescriptor.getFilePath());
-        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getOldPath()));
-        assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath()));
+        assertFalse(amazonS3.doesObjectExist("default", fileDescriptor.getUser() + "/" + fileDescriptor.getOldPath()));
+        assertTrue(amazonS3.doesObjectExist("default", fileDescriptor.getUser() + "/" + fileDescriptor.getFilePath()));
         assertNull(fileDescriptor.getContent());
         assertEquals(FileUtils.sizeOf(file), fileDescriptor.getFileSize());
         EncryptedIntegrity encryptedIntegrity = fileDescriptor.getEncryptedIntegrity()[0];
@@ -139,8 +139,8 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertEquals(username, fileDescriptor.getUser());
         assertEquals("test", fileDescriptor.getOldPath());
         assertEquals("test2", fileDescriptor.getFilePath());
-        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), "test/test1/" + file.getName()));
-        assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), "test2/test1/" + file.getName()));
+        assertFalse(amazonS3.doesObjectExist("default", fileDescriptor.getUser() + "/test/test1/" + file.getName()));
+        assertTrue(amazonS3.doesObjectExist("default", fileDescriptor.getUser() + "/test2/test1/" + file.getName()));
         assertNull(fileDescriptor.getContent());
         assertEquals(0, fileDescriptor.getFileSize());
         Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();
@@ -162,8 +162,8 @@ public class S3SftpEventListenerTest extends InboxTest {
         assertEquals(username, fileDescriptor.getUser());
         assertEquals("test/test1", fileDescriptor.getOldPath());
         assertEquals("test/test2", fileDescriptor.getFilePath());
-        assertFalse(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getOldPath() + "/" + file.getName()));
-        assertTrue(amazonS3.doesObjectExist(fileDescriptor.getUser(), fileDescriptor.getFilePath() + "/" + file.getName()));
+        assertFalse(amazonS3.doesObjectExist("default", fileDescriptor.getUser() + "/" + fileDescriptor.getOldPath() + "/" + file.getName()));
+        assertTrue(amazonS3.doesObjectExist("default", fileDescriptor.getUser() + "/" + fileDescriptor.getFilePath() + "/" + file.getName()));
         assertNull(fileDescriptor.getContent());
         assertEquals(0, fileDescriptor.getFileSize());
         Object encryptedIntegrity = fileDescriptor.getEncryptedIntegrity();

@@ -10,7 +10,7 @@ public enum PasswordHashingAlgorithm {
     SHA512("$6"),
     BLOWFISH(null);
 
-    private String magicString;
+    private final String magicString;
 
     PasswordHashingAlgorithm(String magicString) {
         this.magicString = magicString;

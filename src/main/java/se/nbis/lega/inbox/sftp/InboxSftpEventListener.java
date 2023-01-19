@@ -1,6 +1,7 @@
 package se.nbis.lega.inbox.sftp;
 
 import com.google.gson.Gson;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -19,7 +20,6 @@ import se.nbis.lega.inbox.pojo.EncryptedIntegrity;
 import se.nbis.lega.inbox.pojo.FileDescriptor;
 import se.nbis.lega.inbox.pojo.Operation;
 
-import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -36,7 +36,7 @@ import static se.nbis.lega.inbox.pojo.Operation.*;
  * Optional bean: initialized only if S3 keys are NOT present in the context.
  */
 @Slf4j
-@ConditionalOnExpression("'${inbox.s3.access-key}'.isEmpty() || '${inbox.s3.secret-key}'.isEmpty()")
+@ConditionalOnExpression("'${inbox.s3.access-key}'.isEmpty() || '${inbox.s3.secret-key}'.isEmpty() || '${inbox.s3.bucket}'.isEmpty()")
 @Component
 public class InboxSftpEventListener implements SftpEventListener {
 
@@ -198,7 +198,7 @@ public class InboxSftpEventListener implements SftpEventListener {
     protected void processFile(Operation operation, String username, Path srcPath, Path dstPath) throws IOException {
         File file = dstPath.toFile();
         String extension = FilenameUtils.getExtension(file.getName());
-        log.info("File {} affected by user {}", dstPath.toString(), username);
+        log.info("File {} affected by user {}", dstPath, username);
         if (REMOVE == operation) {
             FileDescriptor fileDescriptor = new FileDescriptor();
             fileDescriptor.setUser(username);
@@ -259,6 +259,7 @@ public class InboxSftpEventListener implements SftpEventListener {
         log.debug("POSIX filepath is {} for user {}", key, username);
         return key;
     }
+
     @Value("${inbox.local.directory}")
     public void setInboxFolder(String inboxFolder) {
         this.inboxFolder = inboxFolder;
