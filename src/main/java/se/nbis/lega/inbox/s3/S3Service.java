@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 @Service
 public class S3Service {
 
-    private AmazonS3 amazonS3;
     public String s3Bucket;
+    private AmazonS3 amazonS3;
 
     /**
      * Creates a bucket with a username if it doesn't exist yet.

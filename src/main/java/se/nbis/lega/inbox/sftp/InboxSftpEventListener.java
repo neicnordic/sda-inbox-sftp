@@ -257,6 +257,7 @@ public class InboxSftpEventListener implements SftpEventListener {
             key = key.substring(1);
         }
         log.debug("POSIX filepath is {} for user {}", key, username);
+
         return key;
     }
 

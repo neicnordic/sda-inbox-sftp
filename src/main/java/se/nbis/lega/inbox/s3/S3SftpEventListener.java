@@ -69,8 +69,9 @@ public class S3SftpEventListener extends InboxSftpEventListener {
 
     @Override
     protected String getFilePath(Path path, String username) {
-        log.debug("S3 object path is {} for user {}", path, username);
-        return s3Service.getKey(path);
+        final var objectPath = Path.of(username + "/" + path);
+        log.debug("S3 object path is {} for user {}", objectPath, username);
+        return s3Service.getKey(objectPath);
     }
 
     @Autowired
