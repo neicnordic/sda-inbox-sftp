@@ -46,6 +46,7 @@ public class InboxSftpEventListener implements SftpEventListener {
     );
 
     protected String inboxFolder;
+    protected String inboxFSPath;
     protected String exchange;
     protected String routingKeyChecksums;
     protected String routingKeyFiles;
@@ -258,12 +259,21 @@ public class InboxSftpEventListener implements SftpEventListener {
         }
         log.debug("POSIX filepath is {} for user {}", key, username);
 
+//        if (inboxFSPath != null && inboxFSPath != "") {
+//            return inboxFSPath + "/" + key    ;
+//        }
+
         return key;
     }
 
     @Value("${inbox.local.directory}")
     public void setInboxFolder(String inboxFolder) {
         this.inboxFolder = inboxFolder;
+    }
+
+    @Value("${inbox.local.s3BackendFSPath}")
+    public void setInboxFSPath(String inboxFSPath) {
+        this.inboxFSPath = inboxFSPath;
     }
 
     @Value("${inbox.mq.exchange}")
