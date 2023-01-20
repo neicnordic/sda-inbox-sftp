@@ -29,7 +29,7 @@ public class S3Service {
     private AmazonS3 amazonS3;
 
     /**
-     * Creates a bucket with a username if it doesn't exist yet.
+     * Creates a bucket if it doesn't exist yet.
      */
     public void prepareBucket() {
         try {
@@ -52,7 +52,7 @@ public class S3Service {
     /**
      * Uploads a file to a specified bucket synchronously.
      *
-     * @param userPath Bucket name.
+     * @param userPath Username as part of s3 object key (thus constructing the path).
      * @param key      S3 key. If not specified - obtained from path.
      * @param path     Path of the file.
      * @param sync     <code>true</code> for synchronous upload, <code>false</code> otherwise.
@@ -78,7 +78,7 @@ public class S3Service {
     /**
      * Moves a file from one location to another.
      *
-     * @param userPath Bucket name.
+     * @param userPath Username as part of s3 object key (thus constructing the path).
      * @param srcPath  Source location.
      * @param dstPath  Destination location.
      */
@@ -114,7 +114,7 @@ public class S3Service {
     /**
      * Removes file by path.
      *
-     * @param userPath Bucket name.
+     * @param userPath Username as part of s3 object key (thus constructing the path).
      * @param path     Path to file to remove.
      */
     public void remove(String userPath, Path path) {
