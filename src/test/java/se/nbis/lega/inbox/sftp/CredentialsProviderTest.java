@@ -15,6 +15,8 @@ import se.nbis.lega.inbox.pojo.PasswordHashingAlgorithm;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
 public class CredentialsProviderTest extends InboxTest {
@@ -27,8 +29,10 @@ public class CredentialsProviderTest extends InboxTest {
     @Test
     public void getCredentialsSuccess() throws IOException, URISyntaxException {
         Credentials credentials = credentialsProvider.getCredentials(username);
+        List<String> publickeyList = new ArrayList<>();
+        publickeyList.add(publicKey);
         collector.checkThat(passwordHash, CoreMatchers.is(credentials.getPasswordHash()));
-        collector.checkThat(publicKey, CoreMatchers.is(credentials.getPublicKey()));
+        collector.checkThat(publickeyList, CoreMatchers.is(credentials.getPublicKey()));
     }
 
     @Test(expected = RestClientException.class)

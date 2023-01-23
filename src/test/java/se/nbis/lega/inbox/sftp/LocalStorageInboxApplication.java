@@ -1,7 +1,6 @@
 package se.nbis.lega.inbox.sftp;
 
 import com.google.gson.Gson;
-import org.mockito.ArgumentMatchers;
 import org.mockito.stubbing.Answer;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

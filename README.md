@@ -46,31 +46,33 @@ while S3 is the real final destination for the uploaded files.
 Environment variables used:
 
 
-| Variable name         | Default value     | Description                                                |
-|-----------------------|-------------------|------------------------------------------------------------|
-| BROKER_USERNAME       | guest             | RabbitMQ broker username                                   |
-| BROKER_PASSWORD       | guest             | RabbitMQ broker password                                   |
-| BROKER_HOST           | mq                | RabbitMQ broker host                                       |
-| BROKER_PORT           | 5672              | RabbitMQ broker port                                       |
-| BROKER_VHOST          | /                 | RabbitMQ broker vhost                                      |
-| BROKER_EXCHANGE       | sda               | RabbitMQ broker exchange                                   |
-| BROKER_ROUTING_KEY    | files             | RabbitMQ broker routing key                                |
-| INBOX_PORT            | 2222              | Inbox port                                                 |
-| INBOX_LOCATION        | /ega/inbox/       | Path to POSIX Inbox backend                                |
-| INBOX_KEYPAIR         |                   | Path to RSA keypair file                                   |
-| KEYSTORE_TYPE         | JKS               | Keystore type to use, JKS or PKCS12                        |
-| KEYSTORE_PATH         | /etc/ega/inbox.jks | Path to Keystore file                                      |
-| KEYSTORE_PASSWORD     |                   | Password to access the Keystore                            |
-| CACHE_TTL             | 300.0             | CEGA credentials time-to-live                              |
-| CEGA_ENDPOINT         |                   | CEGA REST endpoint                                         |
-| CEGA_ENDPOINT_CREDS   |                   | CEGA REST credentials                                      |
-| S3_ENDPOINT           | inbox-backend:9000 | Inbox S3 backend URL                                       |
-| S3_REGION             | us-east-1         | Inbox S3 backend region (us-east-1 is default in Minio)    |
-| S3_ACCESS_KEY         |                   | Inbox S3 backend access key (S3 disabled if not specified) |
-| S3_SECRET_KEY         |                   | Inbox S3 backend secret key (S3 disabled if not specified) |
-| USE_SSL               | true              | true if S3 Inbox backend should be accessed by HTTPS       |
-| LOGSTASH_HOST         |                   | Hostname of the Logstash instance (if any)                 |
-| LOGSTASH_PORT         |                   | Port of the Logstash instance (if any)                     |
+| Variable name       | Default value      | Description                                                     |
+|---------------------|--------------------|-----------------------------------------------------------------|
+| BROKER_USERNAME     | guest              | RabbitMQ broker username                                        |
+| BROKER_PASSWORD     | guest              | RabbitMQ broker password                                        |
+| BROKER_HOST         | mq                 | RabbitMQ broker host                                            |
+| BROKER_PORT         | 5672               | RabbitMQ broker port                                            |
+| BROKER_VHOST        | /                  | RabbitMQ broker vhost                                           |
+| BROKER_EXCHANGE     | sda                | RabbitMQ broker exchange                                        |
+| BROKER_ROUTING_KEY  | files              | RabbitMQ broker routing key                                     |
+| INBOX_PORT          | 2222               | Inbox port                                                      |
+| INBOX_LOCATION      | /ega/inbox/        | Path to POSIX Inbox backend                                     |
+| INBOX_FS_PATH       |                    | Prefix path when custom filesystem is used on top of POSIX      |
+| INBOX_KEYPAIR       |                    | Path to RSA keypair file                                        |
+| KEYSTORE_TYPE       | JKS                | Keystore type to use, JKS or PKCS12                             |
+| KEYSTORE_PATH       | /etc/ega/inbox.jks | Path to Keystore file                                           |
+| KEYSTORE_PASSWORD   |                    | Password to access the Keystore                                 |
+| CACHE_TTL           | 300.0              | CEGA credentials time-to-live                                   |
+| CEGA_ENDPOINT       |                    | CEGA REST endpoint                                              |
+| CEGA_ENDPOINT_CREDS |                    | CEGA REST credentials                                           |
+| S3_ENDPOINT         | inbox-backend:9000 | Inbox S3 backend URL                                            |
+| S3_REGION           | us-east-1          | Inbox S3 backend region (us-east-1 is default in Minio)         |
+| S3_ACCESS_KEY       |                    | Inbox S3 backend access key (S3 disabled if not specified)      |
+| S3_SECRET_KEY       |                    | Inbox S3 backend secret key (S3 disabled if not specified)      |
+| S3_BUCKET           |                    | Inbox S3 backend secret bucket (S3 disabled if not specified) |
+| USE_SSL             | true               | true if S3 Inbox backend should be accessed by HTTPS            |
+| LOGSTASH_HOST       |                    | Hostname of the Logstash instance (if any)                      |
+| LOGSTASH_PORT       |                    | Port of the Logstash instance (if any)                          |
 
 If `LOGSTASH_HOST` or `LOGSTASH_PORT` is empty, Logstash logging will not be enabled.
 

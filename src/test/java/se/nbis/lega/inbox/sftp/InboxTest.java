@@ -17,7 +17,9 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
-import se.nbis.lega.inbox.pojo.*;
+import se.nbis.lega.inbox.pojo.Credentials;
+import se.nbis.lega.inbox.pojo.KeyAlgorithm;
+import se.nbis.lega.inbox.pojo.PasswordHashingAlgorithm;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +27,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.Mockito.when;
 
@@ -37,13 +42,11 @@ public abstract class InboxTest {
     protected String inboxFolder;
     protected String cegaEndpoint;
     protected String cegaCredentials;
-
-    private RestTemplate restTemplate;
-
     protected String username;
     protected String password;
     protected String passwordHash;
     protected String publicKey;
+    private RestTemplate restTemplate;
 
     @Before
     public void generateUser() throws IOException, URISyntaxException {

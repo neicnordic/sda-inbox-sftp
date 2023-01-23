@@ -37,7 +37,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
     private CredentialsProvider credentialsProvider;
 
     // Caffeine cache with entry-specific TTLs
-    private LoadingCache<String, Credentials> credentialsCache = Caffeine.newBuilder()
+    private final LoadingCache<String, Credentials> credentialsCache = Caffeine.newBuilder()
             .expireAfter(new Expiry<String, Credentials>() {
                 public long expireAfterCreate(String key, Credentials graph, long currentTime) {
                     return TimeUnit.SECONDS.toNanos(defaultCacheTTL);
@@ -83,7 +83,7 @@ public class InboxAuthenticator implements PublickeyAuthenticator, PasswordAuthe
         try {
             Credentials credentials = credentialsCache.get(username);
             if (credentials.getPublicKey() != null && key != null) {
-                List<String> keysList= credentials.getPublicKey();
+                List<String> keysList = credentials.getPublicKey();
                 for (String pubKey : keysList) {
                     PublicKey publicKey = readKey(pubKey);
                     return KeyUtils.compareKeys(publicKey, key);

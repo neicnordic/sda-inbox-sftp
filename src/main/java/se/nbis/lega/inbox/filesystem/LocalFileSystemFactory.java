@@ -28,9 +28,10 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystem;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.nio.file.Path;
+
 /**
  * SFTP filesystem factory that backs Mina with <code>RootedFileSystem</code>.
  */
