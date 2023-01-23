@@ -257,12 +257,11 @@ public class InboxSftpEventListener implements SftpEventListener {
         if (key.startsWith("/")) {
             key = key.substring(1);
         }
+        if (inboxFSPath != null && !inboxFSPath.trim().isEmpty()) {
+            log.debug("Inbox FS path filepath is {}", inboxFSPath);
+            key = inboxFSPath + "/" + key    ;
+        }
         log.debug("POSIX filepath is {} for user {}", key, username);
-
-//        if (inboxFSPath != null && inboxFSPath != "") {
-//            return inboxFSPath + "/" + key    ;
-//        }
-
         return key;
     }
 
