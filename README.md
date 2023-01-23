@@ -69,7 +69,7 @@ Environment variables used:
 | S3_REGION           | us-east-1          | Inbox S3 backend region (us-east-1 is default in Minio)         |
 | S3_ACCESS_KEY       |                    | Inbox S3 backend access key (S3 disabled if not specified)      |
 | S3_SECRET_KEY       |                    | Inbox S3 backend secret key (S3 disabled if not specified)      |
-| S3_BUCKET           |                    | Inbox S3 backend secret keyucket (S3 disabled if not specified) |
+| S3_BUCKET           |                    | Inbox S3 backend secret bucket (S3 disabled if not specified) |
 | USE_SSL             | true               | true if S3 Inbox backend should be accessed by HTTPS            |
 | LOGSTASH_HOST       |                    | Hostname of the Logstash instance (if any)                      |
 | LOGSTASH_PORT       |                    | Port of the Logstash instance (if any)                          |
