@@ -8,7 +8,7 @@ COPY src/ /src/
 
 RUN mvn clean install -DskipTests --no-transfer-progress
 
-FROM openjdk:19-alpine
+FROM amazoncorretto:19-alpine3.17
 
 RUN addgroup -g 1000 lega && \
     adduser -D -u 1000 -G lega lega
@@ -20,13 +20,5 @@ RUN mkdir -p /ega/inbox && \
 VOLUME /ega/inbox
 
 COPY --from=builder /target/inbox-0.0.3-SNAPSHOT.jar .
-
-COPY entrypoint.sh .
-
-RUN chmod +x entrypoint.sh
-
-#USER 1000
-
-# ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["java", "-jar", "inbox-0.0.3-SNAPSHOT.jar"]
