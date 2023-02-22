@@ -8,7 +8,7 @@ COPY src/ /src/
 
 RUN mvn clean install -DskipTests --no-transfer-progress
 
-FROM openjdk:19-alpine
+FROM eclipse-temurin:19-alpine
 
 RUN addgroup -g 1000 lega && \
     adduser -D -u 1000 -G lega lega
