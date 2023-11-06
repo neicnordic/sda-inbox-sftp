@@ -1,3 +1,6 @@
+> ### Archival notice
+> :warning: **This repository is no longer maintained. The code has been integrated and it is further developed at: https://github.com/neicnordic/sensitive-data-archive**
+
 # SFTP Inbox for NeIC SDA
 
 ![Java CI](https://github.com/neicnordic/sda-inbox-sftp/workflows/Java%20CI/badge.svg)
